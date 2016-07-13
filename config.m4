@@ -13,9 +13,8 @@ dnl [  --with-Pinyin             Include Pinyin support])
 
 dnl Otherwise use enable:
 
-dnl PHP_ARG_ENABLE(Pinyin, whether to enable Pinyin support,
-dnl Make sure that the comment is aligned:
-dnl [  --enable-Pinyin           Enable Pinyin support])
+PHP_ARG_ENABLE(Pinyin, whether to enable Pinyin support,
+[  --enable-Pinyin           Enable Pinyin support])
 
 if test "$PHP_PINYIN" != "no"; then
   dnl Write more examples of tests here...
@@ -59,5 +58,5 @@ if test "$PHP_PINYIN" != "no"; then
   dnl
   dnl PHP_SUBST(PINYIN_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(Pinyin, Pinyin.c, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+  PHP_NEW_EXTENSION(Pinyin, pinyin.c, $ext_shared)
 fi

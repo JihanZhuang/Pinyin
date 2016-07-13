@@ -3,7 +3,14 @@
 
 zend_class_entry *pinyin_ce;
 
+
+PHP_METHOD(Pinyin,__construct){
+	printf("hello world!");
+
+}
+
 static zend_function_entry pinyin_method[]={
+	ZEND_ME(Pinyin,		__construct,    NULL,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
     {NULL,NULL,NULL}
 };
 
@@ -27,18 +34,13 @@ ZEND_MINIT_FUNCTION(pinyin)
 }
 
 
-PHP_METHOD(Pinyin,__construct){
-
-}
-
-
 
 zend_module_entry pinyin_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
      STANDARD_MODULE_HEADER,
 #endif
     "pinyin",
-    php_pinyin_functions, /* Functions 这里必须写明你的扩展名的函数，使phpapi支持该扩展的所有函数*/
+    pinyin_method, /* Functions 这里必须写明你的扩展名的函数，使phpapi支持该扩展的所有函数*/
     NULL, /* MINIT */
     NULL, /* MSHUTDOWN */
     NULL, /* RINIT */
