@@ -19,16 +19,10 @@ ZEND_MINIT_FUNCTION(pinyin)
     zend_class_entry ce;
     INIT_CLASS_ENTRY(ce,"Pinyin",pinyin_method);
     pinyin_ce = zend_register_internal_class(&ce TSRMLS_CC);
-    char *none_name="NONE";
-    char *none_val="none";
-    char *ascii_name="ASCII";
-    char *ascii_val="ascii";
-    char *unicode_name="UNICODE";
-    char *unicode_val="unicode";
      
-    zend_declare_class_constant_string(&ce, none_name, sizeof(none_name), none_val TSRMLS_DC);
-	zend_declare_class_constant_string(&ce, ascii_name, sizeof(ascii_name), ascii_val TSRMLS_DC);
-	zend_declare_class_constant_string(&ce, unicode_name, sizeof(unicode_name), unicode_val TSRMLS_DC);
+    zend_declare_class_constant_string(&ce, "NONE", sizeof("NONE"), "none" TSRMLS_DC);
+	zend_declare_class_constant_string(&ce, "ASCII", sizeof("ASCII"), "ascii" TSRMLS_DC);
+	zend_declare_class_constant_string(&ce, "UNICODE", sizeof("UNICODE"), "unicode" TSRMLS_DC);
 
     return SUCCESS;
 }
