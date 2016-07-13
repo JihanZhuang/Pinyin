@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("Pinyin", "for Pinyin support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("Pinyin", "enable Pinyin support", "no");
+
+if (PHP_PINYIN != "no") {
+	EXTENSION("Pinyin", "Pinyin.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+}
+
