@@ -1,4 +1,4 @@
-//php Pinyin
+//php_pinyin.h
 #ifndef PINYIN_H
 #define PINYIN_H
 
