@@ -16,16 +16,27 @@ const zend_function_entry pinyin_method[]={
 
 ZEND_MINIT_FUNCTION(pinyin)
 {
-
+	//define a entry
     zend_class_entry ce;
 	//printf("ce is %p",&ce);
+	//init entry
     INIT_CLASS_ENTRY(ce,"Pinyin",pinyin_method);
+    //register entry into zend engine
     pinyin_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	//printf("pinyin_ce is %p,ce is %p",pinyin_ce,&ce);
+	//define const var
     zend_declare_class_constant_string(pinyin_ce, "NONE", strlen("NONE"), "none" TSRMLS_CC);
 	zend_declare_class_constant_string(pinyin_ce, "ASCII", strlen("ASCII"), "ascii" TSRMLS_CC);
 	zend_declare_class_constant_string(pinyin_ce, "UNICODE", strlen("UNICODE"), "unicode" TSRMLS_CC);
+
+	//define protected var
+	//定义属性
+	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PUBLIC TSRMLS_CC);
+	zval punctuations;
+	//MAKE_STD_ZVAL(punctuations);
+	zend_printf("%d", Z_TYPE_P(&punctuations));
+
 
     return SUCCESS;
 }
