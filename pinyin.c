@@ -9,20 +9,23 @@ PHP_METHOD(Pinyin,__construct){
 
 }
 
-zend_function_entry pinyin_method[]={
+const zend_function_entry pinyin_method[]={
 	ZEND_ME(Pinyin,		__construct,    NULL,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
     {NULL,NULL,NULL}
 };
 
 ZEND_MINIT_FUNCTION(pinyin)
 {
+
     zend_class_entry ce;
+	//printf("ce is %p",&ce);
     INIT_CLASS_ENTRY(ce,"Pinyin",pinyin_method);
     pinyin_ce = zend_register_internal_class(&ce TSRMLS_CC);
-     
-    zend_declare_class_constant_string(&ce, "NONE", sizeof("NONE"), "none" TSRMLS_DC);
-	zend_declare_class_constant_string(&ce, "ASCII", sizeof("ASCII"), "ascii" TSRMLS_DC);
-	zend_declare_class_constant_string(&ce, "UNICODE", sizeof("UNICODE"), "unicode" TSRMLS_DC);
+
+	//printf("pinyin_ce is %p,ce is %p",pinyin_ce,&ce);
+    zend_declare_class_constant_string(pinyin_ce, "NONE", strlen("NONE"), "none" TSRMLS_CC);
+	zend_declare_class_constant_string(pinyin_ce, "ASCII", strlen("ASCII"), "ascii" TSRMLS_CC);
+	zend_declare_class_constant_string(pinyin_ce, "UNICODE", strlen("UNICODE"), "unicode" TSRMLS_CC);
 
     return SUCCESS;
 }
