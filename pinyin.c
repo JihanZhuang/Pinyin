@@ -6,13 +6,14 @@ zend_class_entry *pinyin_ce;
 
 PHP_METHOD(Pinyin,__construct){
 	//printf("hello world!");
+	//printf("%s\n",__func__);
 	zval punctuations;
 	zval *tmp;
 	tmp=getThis();
 	//MAKE_STD_ZVAL(punctuations);
 	array_init(&punctuations);
 	add_property_zval(tmp, "punctuations", &punctuations);
-
+    zval_ptr_dtor(&punctuations);
 }
 
 const zend_function_entry pinyin_method[]={
@@ -52,7 +53,14 @@ ZEND_MINIT_FUNCTION(pinyin)
     return SUCCESS;
 }
 
-
+/* {{{ PHP_MSHUTDOWN_FUNCTION */
+PHP_MSHUTDOWN_FUNCTION(pinyin)
+{
+	//zend_hash_destroy(&pdo_driver_hash);
+	//pdo_sqlstate_fini_error_table();
+	return SUCCESS;
+}
+/* }}} */ 
 
 zend_module_entry pinyin_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
@@ -61,7 +69,7 @@ zend_module_entry pinyin_module_entry = {
     "pinyin",
     pinyin_method, /* Functions 这里必须写明你的扩展名的函数，使phpapi支持该扩展的所有函数*/
     PHP_MINIT(pinyin), /* MINIT */
-    NULL, /* MSHUTDOWN */
+    PHP_MSHUTDOWN(pinyin), /* MSHUTDOWN */
     NULL, /* RINIT */
     NULL, /* RSHUTDOWN */
     NULL, /* MINFO */
