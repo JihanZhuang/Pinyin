@@ -13,6 +13,15 @@ PHP_METHOD(Pinyin,__construct){
 	//MAKE_STD_ZVAL(punctuations);
 	array_init(&punctuations);
 	add_property_zval(tmp, "punctuations", &punctuations);
+	add_assoc_string(&punctuations,"，",",");
+    add_assoc_string(&punctuations,"。",".");
+	add_assoc_string(&punctuations,"！","!");
+	add_assoc_string(&punctuations,"？","?");
+	add_assoc_string(&punctuations,"：",":");
+	add_assoc_string(&punctuations,"“","\"");
+	add_assoc_string(&punctuations,"”","\"");
+	add_assoc_string(&punctuations,"‘","'");
+	add_assoc_string(&punctuations,"’","'");
     zval_ptr_dtor(&punctuations);
 }
 
@@ -39,7 +48,7 @@ ZEND_MINIT_FUNCTION(pinyin)
 
 	//define protected var
 	//定义属性
-	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PROTECTED TSRMLS_CC);
 	//zval *punctuations;
 	//array_init(punctuations);
 	//zend_printf("%d", Z_TYPE_P(&punctuations));
