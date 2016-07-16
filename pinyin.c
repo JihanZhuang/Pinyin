@@ -35,9 +35,11 @@ PHP_METHOD(Pinyin,__construct){
 	}
 	if(loader!=NULL){
 	call_user_function(CG(function_table),NULL,&fname,&retval,1,loader);
-	//printf("%s\n",retval.value.str);
+	//printf("%s\n",retval.value.str.val[1]);
+	//if(!strcmp(retval.value.str.val,"DictLoaderInterface")){
+	//	zend_throw_exception_ex(pinyin_ce,0,"Pinyin __construct's param must be the class of DictLoaderInterface");
+	//}
 	zend_update_property(pinyin_ce, tmp, "loader", sizeof("loader")-1, loader);
-    zval_ptr_dtor(&loader);
 
 	}
 		//printf("%s\n",retval.value.str);
@@ -46,9 +48,11 @@ PHP_METHOD(Pinyin,__construct){
 	 zval_ptr_dtor(&punctuations);
 	 zval_ptr_dtor(&fname);
 }
-
+ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
+		ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
+ZEND_END_ARG_INFO()
 const zend_function_entry pinyin_method[]={
-	ZEND_ME(Pinyin,		__construct,    NULL,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
     {NULL,NULL,NULL}
 };
 
