@@ -24,15 +24,27 @@ PHP_METHOD(Pinyin,__construct){
 	add_assoc_string(&punctuations,"”","\"");
 	add_assoc_string(&punctuations,"‘","'");
 	add_assoc_string(&punctuations,"’","'");
-    zval_ptr_dtor(&punctuations);
+   
+
 	//init loader
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &loader) == FAILURE) {
+	zval retval;
+	zval fname;
+	ZVAL_STRING(&fname,"get_class");
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|z", &loader) == FAILURE) {
 			return;
 	}
+	if(loader!=NULL){
+	call_user_function(CG(function_table),NULL,&fname,&retval,1,loader);
+	//printf("%s\n",retval.value.str);
 	zend_update_property(pinyin_ce, tmp, "loader", sizeof("loader")-1, loader);
+    zval_ptr_dtor(&loader);
+
+	}
+		//printf("%s\n",retval.value.str);
 	//printf("%s\n",(&loader));
 	//printf("123");
-
+	 zval_ptr_dtor(&punctuations);
+	 zval_ptr_dtor(&fname);
 }
 
 const zend_function_entry pinyin_method[]={
