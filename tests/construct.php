@@ -1,5 +1,5 @@
 <?php
 $param=new Pinyin();
-$tmp=new Pinyin($param);
+$tmp=new Pinyin(null);
 var_dump($tmp->loader);
 

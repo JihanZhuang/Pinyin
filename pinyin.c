@@ -34,7 +34,7 @@ PHP_METHOD(Pinyin,__construct){
 			return;
 	}
 	if(loader!=NULL){
-	call_user_function(CG(function_table),NULL,&fname,&retval,1,loader);
+	//call_user_function(CG(function_table),NULL,&fname,&retval,1,loader);
 	//printf("%s\n",retval.value.str.val[1]);
 	//if(!strcmp(retval.value.str.val,"DictLoaderInterface")){
 	//	zend_throw_exception_ex(pinyin_ce,0,"Pinyin __construct's param must be the class of DictLoaderInterface");
