@@ -64,17 +64,17 @@ ZEND_MINIT_FUNCTION(pinyin)
 	//init entry
     INIT_CLASS_ENTRY(ce,"Pinyin",pinyin_method);
     //register entry into zend engine
-    pinyin_ce = zend_register_internal_class(&ce TSRMLS_CC);
+    pinyin_ce = zend_register_internal_class(&ce);
 
 	//printf("pinyin_ce is %p,ce is %p",pinyin_ce,&ce);
 	//define const var
-    zend_declare_class_constant_string(pinyin_ce, "NONE", strlen("NONE"), "none" TSRMLS_CC);
-	zend_declare_class_constant_string(pinyin_ce, "ASCII", strlen("ASCII"), "ascii" TSRMLS_CC);
-	zend_declare_class_constant_string(pinyin_ce, "UNICODE", strlen("UNICODE"), "unicode" TSRMLS_CC);
+    zend_declare_class_constant_string(pinyin_ce, "NONE", strlen("NONE"), "none");
+	zend_declare_class_constant_string(pinyin_ce, "ASCII", strlen("ASCII"), "ascii");
+	zend_declare_class_constant_string(pinyin_ce, "UNICODE", strlen("UNICODE"), "unicode");
 
 	//define protected var
 	//定义属性
-	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PUBLIC TSRMLS_CC);
+	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PROTECTED);
 	//zval *punctuations;
 	//array_init(punctuations);
 	//zend_printf("%d", Z_TYPE_P(&punctuations));
