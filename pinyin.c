@@ -48,11 +48,37 @@ PHP_METHOD(Pinyin,__construct){
 	 zval_ptr_dtor(&punctuations);
 	 zval_ptr_dtor(&fname);
 }
+PHP_FUNCTION(pinyin_convertStr){
+	char *str=NULL;
+	size_t len;
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"s",&str,&len) == FAILURE){
+        return;
+    }
+	//printf("%s",string);
+
+}
+PHP_METHOD(Pinyin,prepare){
+	char *string;
+	zval params[1];
+	
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"s",string) == FAILURE){
+		return;
+	}
+	printf("%s",string);
+
+	//call_user_function(EG(function_table), NULL, func, &retval, 2, argv);
+
+}
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(arginfo_pinyin_convertStr, 0)
+		ZEND_ARG_INFO(0,str)
+ZEND_END_ARG_INFO()
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_FE(pinyin_convertStr, arginfo_pinyin_convertStr)
     {NULL,NULL,NULL}
 };
 
