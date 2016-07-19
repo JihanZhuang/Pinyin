@@ -57,7 +57,7 @@ PHP_FUNCTION(pinyin_convertStr){
 	//可变长度的字符串是用堆分配内存的，可以修改。
 	//str[0]='c';
 	//printf("%s",str);
-	regex_t reg;
+	/*regex_t reg;
 	regex_match pmatch[1];
 	int status,i;
 	int cflag=REG_EXTENDED|REG_ICASE;
@@ -71,7 +71,8 @@ PHP_FUNCTION(pinyin_convertStr){
 		}
 
 	}
-	regfree(&reg);
+	regfree(&reg);*/
+	pcre_extra data;
 	return SUCCESS;
 
 
