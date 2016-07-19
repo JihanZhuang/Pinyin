@@ -7,6 +7,7 @@
 #endif
 
 #include "php.h"
+#include "regex.h"
 extern zend_module_entry pinyin_module_entry;
 #define phpext_pinyin_ptr &pinyin_module_entry
 
