@@ -16,7 +16,7 @@ PHP_METHOD(Pinyin,__construct){
 	array_init(&punctuations);
 	zend_update_property(pinyin_ce,tmp, "punctuations",sizeof("punctuations"), &punctuations);
 	add_assoc_string(&punctuations,"，",",");
-    add_assoc_string(&punctuations,"。",".");
+	add_assoc_string(&punctuations,"。",".");
 	add_assoc_string(&punctuations,"！","!");
 	add_assoc_string(&punctuations,"？","?");
 	add_assoc_string(&punctuations,"：",":");
@@ -57,23 +57,8 @@ PHP_FUNCTION(pinyin_convertStr){
 	//可变长度的字符串是用堆分配内存的，可以修改。
 	//str[0]='c';
 	//printf("%s",str);
-	/*regex_t reg;
-	regex_match pmatch[1];
-	int status,i;
-	int cflag=REG_EXTENDED|REG_ICASE;
-	const char *pattern="[a-z0-9_-]+i";
-	const size_t nmatch=1;
-	regcomp(&reg,pattern,cflag);
-	status=regexec(&reg,str,nmatch,pmatch,0);
-	if(status==0){
-		for(i=pmatch[0].rm_so;i<pmatch[0].rm_eo;i++){
-			putchar(str[i]);
-		}
-
-	}
-	regfree(&reg);*/
-	pcre_extra data;
-	return SUCCESS;
+	
+	//return SUCCESS;
 
 
 }
