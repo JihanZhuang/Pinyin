@@ -1,3 +1,3 @@
 <?php
-$a="sggasgdsa";
+$a="我dsa我";
 pinyin_convertStr($a);
