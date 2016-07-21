@@ -77,7 +77,8 @@ PHP_FUNCTION(pinyin_convertStr){
 	tlen=strlen(tmp);
 	tmp=(char *)realloc(tmp,tlen*sizeof(char)+(i-j)*sizeof(char)+1);
 	strncpy(tmp+tlen,str+j,i-j+1);
-	printf("%s\n",tmp);
+	//printf("%s\n",tmp);
+	ZVAL_STRING(return_value,tmp);
 	free(tmp);
 	//return SUCCESS;
 
