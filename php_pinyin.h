@@ -6,12 +6,8 @@
 #include "config.h"
 #endif
 
+#include "stdlib.h"
 #include "php.h"
-#if HAVE_BUNDLED_PCRE
-#include "pcrelib/pcre.h"
-#else
-#include "pcre.h"
-#endif
 extern zend_module_entry pinyin_module_entry;
 #define phpext_pinyin_ptr &pinyin_module_entry
 

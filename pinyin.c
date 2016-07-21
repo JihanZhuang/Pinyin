@@ -57,7 +57,32 @@ PHP_FUNCTION(pinyin_convertStr){
 	//可变长度的字符串是用堆分配内存的，可以修改。
 	//str[0]='c';
 	//printf("%s",str);
-	
+	char *tmp=NULL;
+	int i=0;
+	int flag=0;
+	int first=1;
+	for(;i<len;i++){
+		if((str[i]>='A'&&str[i]<='Z')||(str[i]>='a'&&str[i]<='z')||(str[i]>='0'&&str[i]<='9')||str[i]=='_'||str[i]=='-'){
+			if(flag==0){
+			if(first==1){
+			tmp=(char *)malloc(sizeof(char)*(i)+strlen("\t")+1);
+			strncpy(tmp,str,i);
+			strcat(tmp,"\t");
+			strcat(tmp,"\0");
+			flag=1;
+			first=0;	
+			}else{
+				tmp=(char *)realloc(tmp,strlen(tmp)+strlen(str)-i+strlen("\t"));
+				strcat(tmp,"\t");
+				strcat(tmp,str+i);
+			}
+		}
+		}else{
+			flag=0;
+		}
+	}
+	printf("%s\n",tmp);
+	free(tmp);
 	//return SUCCESS;
 
 
