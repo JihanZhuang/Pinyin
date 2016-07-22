@@ -57,21 +57,28 @@ PHP_FUNCTION(pinyin_convertStr){
 	//可变长度的字符串是用堆分配内存的，可以修改。
 	//str[0]='c';
 	//printf("%s",str);
-	char *tmp=(char *)malloc(1);
-	*tmp='\0';
+	char *tmp=NULL;
 	int i=0;
 	int flag=0;
 	int j=0;
 	int tlen;
 	for(;i<len;i++){
-		if((str[i]>='A'&&str[i]<='Z')||(str[i]>='a'&&str[i]<='z')||(str[i]>='0'&&str[i]<='9')||str[i]=='_'||str[i]=='-'){
-			tlen=strlen(tmp);
-			tmp=(char *)realloc(tmp,strlen(tmp)+sizeof(char)*(i-j)+strlen("\t")+1);
+		if(((str[i]>='A'&&str[i]<='Z')||(str[i]>='a'&&str[i]<='z')||(str[i]>='0'&&str[i]<='9')||str[i]=='_'||str[i]=='-')&&flag==0){
+				flag=1;
+				if(tmp==NULL){
+					tlen=0;
+				}else{
+				tlen=strlen(tmp);		
+				}
+			tmp=(char *)realloc(tmp,tlen+sizeof(char)*(i-j)+strlen("\t")+1);
 			strncpy(tmp+tlen,str+j,i-j);
 			*(tmp+i-j+tlen)='\0';
 			strcat(tmp,"\t");
-			flag=1;
 			j=i;
+
+		}
+		if(!((str[i]>='A'&&str[i]<='Z')||(str[i]>='a'&&str[i]<='z')||(str[i]>='0'&&str[i]<='9')||str[i]=='_'||str[i]=='-')&&flag==1){
+				flag=0;
 		}
 	}
 	tlen=strlen(tmp);

@@ -1,0 +1,33 @@
+/bin/bash /home/jihanzhuang/code/Pinyin/libtool --mode=compile /usr/bin/gcc  -I. -I/home/jihanzhuang/code/Pinyin -DPHP_ATOM_INC -I/home/jihanzhuang/code/Pinyin/include -I/home/jihanzhuang/code/Pinyin/main -I/home/jihanzhuang/code/Pinyin -I/usr/local/php/include/php -I/usr/local/php/include/php/main -I/usr/local/php/include/php/TSRM -I/usr/local/php/include/php/Zend -I/usr/local/php/include/php/ext -I/usr/local/php/include/php/ext/date/lib  -DHAVE_CONFIG_H  -g3 -gdwarf-2 -O0   -c /home/jihanzhuang/code/Pinyin/pinyin.c -o pinyin.lo 
+mkdir .libs
+ /usr/bin/gcc -I. -I/home/jihanzhuang/code/Pinyin -DPHP_ATOM_INC -I/home/jihanzhuang/code/Pinyin/include -I/home/jihanzhuang/code/Pinyin/main -I/home/jihanzhuang/code/Pinyin -I/usr/local/php/include/php -I/usr/local/php/include/php/main -I/usr/local/php/include/php/TSRM -I/usr/local/php/include/php/Zend -I/usr/local/php/include/php/ext -I/usr/local/php/include/php/ext/date/lib -DHAVE_CONFIG_H -g3 -gdwarf-2 -O0 -c /home/jihanzhuang/code/Pinyin/pinyin.c  -fPIC -DPIC -o .libs/pinyin.o
+/bin/bash /home/jihanzhuang/code/Pinyin/libtool --mode=link /usr/bin/gcc -DPHP_ATOM_INC -I/home/jihanzhuang/code/Pinyin/include -I/home/jihanzhuang/code/Pinyin/main -I/home/jihanzhuang/code/Pinyin -I/usr/local/php/include/php -I/usr/local/php/include/php/main -I/usr/local/php/include/php/TSRM -I/usr/local/php/include/php/Zend -I/usr/local/php/include/php/ext -I/usr/local/php/include/php/ext/date/lib  -DHAVE_CONFIG_H  -g3 -gdwarf-2 -O0   -o Pinyin.la -export-dynamic -avoid-version -prefer-pic -module -rpath /home/jihanzhuang/code/Pinyin/modules  pinyin.lo 
+/usr/bin/gcc -shared  .libs/pinyin.o   -Wl,-soname -Wl,Pinyin.so -o .libs/Pinyin.so
+creating Pinyin.la
+(cd .libs && rm -f Pinyin.la && ln -s ../Pinyin.la Pinyin.la)
+/bin/bash /home/jihanzhuang/code/Pinyin/libtool --mode=install cp ./Pinyin.la /home/jihanzhuang/code/Pinyin/modules
+cp ./.libs/Pinyin.so /home/jihanzhuang/code/Pinyin/modules/Pinyin.so
+cp ./.libs/Pinyin.lai /home/jihanzhuang/code/Pinyin/modules/Pinyin.la
+PATH="$PATH:/sbin" ldconfig -n /home/jihanzhuang/code/Pinyin/modules
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /home/jihanzhuang/code/Pinyin/modules
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the `-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the `LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the `LD_RUN_PATH' environment variable
+     during linking
+   - use the `-Wl,--rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to `/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+
+Build complete.
+Don't forget to run 'make test'.
+
