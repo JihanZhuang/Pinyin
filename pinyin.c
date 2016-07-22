@@ -1,6 +1,6 @@
 //pinyin.c
 #include "php_pinyin.h"
-
+zend_class_entry *dictLoaderInterface_ce;
 zend_class_entry *pinyin_ce;
 
 
@@ -134,7 +134,18 @@ const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
+ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
+	ZEND_ARG_OBJ_INFO(0, callback,"Closure",1)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_mapSurname, 0, 0, 1)
+	ZEND_ARG_OBJ_INFO(0, callback,"Closure",1)
+ZEND_END_ARG_INFO()	
 
+const zend_function_entry dictLoaderInterface_method[]={
+	PHP_ABSTRACT_ME(DictLoaderInterface, map, arginfo_DictLoaderInterface_map)
+	PHP_ABSTRACT_ME(DictLoaderInterface, map, arginfo_DictLoaderInterface_mapSurname)
+	{NULL,NULL,NULL}
+};
 ZEND_MINIT_FUNCTION(pinyin)
 {
 	//define a entry
@@ -160,10 +171,8 @@ ZEND_MINIT_FUNCTION(pinyin)
 	//zend_printf("%d", Z_TYPE_P(&punctuations));
     //add_property_zval_ex(pinyin_ce, "punctuations", strlen("punctuations"), &punctuations);
     //zend_declare_property(pinyin_ce, "punctuations", strlen("punctuations"), punctuations,ZEND_ACC_PROTECTED);
-    
-
-
-
+    INIT_CLASS_ENTRY(ce,"DictLoaderInterface",dictLoaderInterface_method);
+	dictLoaderInterface_ce= zend_register_internal_interface(&ce);
 
     return SUCCESS;
 }
