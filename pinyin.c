@@ -48,7 +48,7 @@ PHP_METHOD(Pinyin,__construct){
 	 zval_ptr_dtor(&punctuations);
 	 zval_ptr_dtor(&fname);
 }
-PHP_FUNCTION(pinyin_convertStr){
+PHP_METHOD(Pinyin,prepare){
 	char *str=NULL;
 	size_t len;
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"s",&str,&len) == FAILURE){
@@ -85,13 +85,32 @@ PHP_FUNCTION(pinyin_convertStr){
 	tmp=(char *)realloc(tmp,tlen*sizeof(char)+(i-j)*sizeof(char)+1);
 	strncpy(tmp+tlen,str+j,i-j+1);
 	//printf("%s\n",tmp);
-	ZVAL_STRING(return_value,tmp);
+	//ZVAL_STRING(return_value,tmp);
+	zval argv[3];
+	zval  retval;
+	zval fname;
+	int   error;
+	ZVAL_STRING(&fname,"preg_replace");
+	ZVAL_STRING(&argv[0],"~[^\\p{Han}\\p{P}\\p{Z}\\p{M}\\p{N}\\p{L}\\t]~u");
+	ZVAL_STRING(&argv[2], tmp);
+	ZVAL_STRING(&argv[1],"");
+	error=call_user_function(EG(function_table), NULL, &fname, &retval, 3, argv);
+	if (error == FAILURE) {
+				php_error_docref(NULL, E_WARNING, "Could not call preg_replace in the class of pinyin");
+	}else{
+		ZVAL_COPY(return_value,&retval);
+	}
+	zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&argv[0]);
+		zval_ptr_dtor(&argv[1]);
+		zval_ptr_dtor(&argv[2]);
+		zval_ptr_dtor(&retval);
 	free(tmp);
 	//return SUCCESS;
 
 
 }
-PHP_METHOD(Pinyin,prepare){
+/*PHP_METHOD(Pinyin,__construct){
 	char *string;
 	zval params[1];
 	
@@ -103,16 +122,16 @@ PHP_METHOD(Pinyin,prepare){
 
 	//call_user_function(EG(function_table), NULL, func, &retval, 2, argv);
 
-}
+}*/
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 ZEND_END_ARG_INFO()
-ZEND_BEGIN_ARG_INFO(arginfo_pinyin_convertStr, 0)
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_prepare, 0)
 		ZEND_ARG_INFO(0,str)
 ZEND_END_ARG_INFO()
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	PHP_FE(pinyin_convertStr, arginfo_pinyin_convertStr)
+	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 
