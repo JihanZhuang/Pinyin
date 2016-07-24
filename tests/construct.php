@@ -1,4 +1,3 @@
 <?php
-$tmp=new Pinyin(null);
-print_r($tmp->punctuations);
-
+$tmp=new Pinyin("132");
+Reflection::export(new ReflectionClass('Pinyin'));

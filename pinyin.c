@@ -1,8 +1,20 @@
 //pinyin.c
 #include "php_pinyin.h"
 zend_class_entry *dictLoaderInterface_ce;
+zend_class_entry *fileDictLoader_ce;
 zend_class_entry *pinyin_ce;
 
+PHP_METHOD(FileDictLoader,__construct){
+
+}
+
+PHP_METHOD(FileDictLoader,map){
+
+}
+
+PHP_METHOD(FileDictLoader,mapSurname){
+
+}
 
 PHP_METHOD(Pinyin,__construct){
 	//printf("hello world!");
@@ -110,21 +122,9 @@ PHP_METHOD(Pinyin,prepare){
 
 
 }
-/*PHP_METHOD(Pinyin,__construct){
-	char *string;
-	zval params[1];
-	
-
-	if(zend_parse_parameters(ZEND_NUM_ARGS(),"s",string) == FAILURE){
-		return;
-	}
-	printf("%s",string);
-
-	//call_user_function(EG(function_table), NULL, func, &retval, 2, argv);
-
-}*/
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
-		ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
+		//ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
+		ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_prepare, 0)
 		ZEND_ARG_INFO(0,str)
@@ -135,18 +135,36 @@ const zend_function_entry pinyin_method[]={
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
-	ZEND_ARG_OBJ_INFO(0, callback,"Closure",1)
+	ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_mapSurname, 0, 0, 1)
-	ZEND_ARG_OBJ_INFO(0, callback,"Closure",1)
+	ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
 ZEND_END_ARG_INFO()	
 
 const zend_function_entry dictLoaderInterface_method[]={
 	PHP_ABSTRACT_ME(DictLoaderInterface, map, arginfo_DictLoaderInterface_map)
-	PHP_ABSTRACT_ME(DictLoaderInterface, map, arginfo_DictLoaderInterface_mapSurname)
+	PHP_ABSTRACT_ME(DictLoaderInterface, mapSurname, arginfo_DictLoaderInterface_mapSurname)
 	{NULL,NULL,NULL}
 };
-ZEND_MINIT_FUNCTION(pinyin)
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader___construct, 0, 0, 1)
+    ZEND_ARG_TYPE_INFO(0, path,IS_STRING,1)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader_map, 0, 0, 1)
+    ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
+	ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader_mapSurname, 0, 0, 1)
+    ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
+ZEND_END_ARG_INFO()
+
+const zend_function_entry fileDictLoader_method[]={
+	PHP_ME(FileDictLoader,      __construct,    arginfo_FileDictLoader___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+    PHP_ME(FileDictLoader,      map, arginfo_FileDictLoader_map,    ZEND_ACC_PUBLIC)
+	PHP_ME(FileDictLoader,      mapSurname, arginfo_FileDictLoader_mapSurname,    ZEND_ACC_PUBLIC)
+    {NULL,NULL,NULL}
+};
+
+PHP_MINIT_FUNCTION(pinyin)
 {
 	//define a entry
     zend_class_entry ce;
@@ -171,9 +189,16 @@ ZEND_MINIT_FUNCTION(pinyin)
 	//zend_printf("%d", Z_TYPE_P(&punctuations));
     //add_property_zval_ex(pinyin_ce, "punctuations", strlen("punctuations"), &punctuations);
     //zend_declare_property(pinyin_ce, "punctuations", strlen("punctuations"), punctuations,ZEND_ACC_PROTECTED);
+	
     INIT_CLASS_ENTRY(ce,"DictLoaderInterface",dictLoaderInterface_method);
 	dictLoaderInterface_ce= zend_register_internal_interface(&ce);
 
+	INIT_CLASS_ENTRY(ce,"FileDictLoader",fileDictLoader_method);
+	fileDictLoader_ce= zend_register_internal_class(&ce);
+	zend_class_implements(fileDictLoader_ce, 1, dictLoaderInterface_ce);
+	zend_declare_property_null(fileDictLoader_ce, "path", strlen("path"), ZEND_ACC_PROTECTED);
+	zend_declare_property_string(fileDictLoader_ce, "segmentName", strlen("segmentName"),"words_\%s", ZEND_ACC_PROTECTED);
+		
     return SUCCESS;
 }
 
