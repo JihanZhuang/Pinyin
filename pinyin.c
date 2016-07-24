@@ -5,7 +5,12 @@ zend_class_entry *fileDictLoader_ce;
 zend_class_entry *pinyin_ce;
 
 PHP_METHOD(FileDictLoader,__construct){
-
+	zval *path=NULL;
+	zval *tmp=getThis();
+	if(zend_parse_parameters(ZEND_NUM_ARGS(), "z", &path)==FAILURE){
+		return;
+	}
+	zend_update_property(fileDictLoader_ce, tmp, "path", sizeof("path")-1, path);
 }
 
 PHP_METHOD(FileDictLoader,map){
@@ -148,7 +153,7 @@ const zend_function_entry dictLoaderInterface_method[]={
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader___construct, 0, 0, 1)
-    ZEND_ARG_TYPE_INFO(0, path,IS_STRING,1)
+    ZEND_ARG_INFO(0, path)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader_map, 0, 0, 1)
     ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
