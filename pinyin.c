@@ -14,6 +14,28 @@ PHP_METHOD(FileDictLoader,__construct){
 }
 
 PHP_METHOD(FileDictLoader,map){
+	zval *string;
+	zval *path;
+	zval *segmentName;
+	zval *tmp=getThis();
+	zval rv;
+	char *segment;
+	int i;
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z",&string)==FAILURE){
+		return;
+	}
+	path=zend_read_property(fileDictLoader_ce,tmp,"path",sizeof("path")-1,0,&rv);
+	segmentName=zend_read_property(fileDictLoader_ce,tmp,"segmentName",sizeof("segmentName")-1,0,&rv);
+	//segment=(char *)malloc(path->value.str->len+segmentName->value.str->len+sizeof(char)*5);
+
+
+	for(i=0;i<100;i++){
+		spprintf(&segment,0,"%s/%s%d",path->value.str->val,segmentName->value.str->val,i);
+		printf("%s\n",segment);
+		if(segment){
+			efree(segment);
+		}
+	}
 
 }
 
@@ -156,10 +178,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader___construct, 0, 0, 1)
     ZEND_ARG_INFO(0, path)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader_map, 0, 0, 1)
-    ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
+    ZEND_ARG_TYPE_INFO(0, string,IS_STRING,1)
 	ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_FileDictLoader_mapSurname, 0, 0, 1)
-    ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
+    ZEND_ARG_TYPE_INFO(0, string,IS_STRING,1)
 ZEND_END_ARG_INFO()
 
 const zend_function_entry fileDictLoader_method[]={
@@ -202,7 +224,7 @@ PHP_MINIT_FUNCTION(pinyin)
 	fileDictLoader_ce= zend_register_internal_class(&ce);
 	zend_class_implements(fileDictLoader_ce, 1, dictLoaderInterface_ce);
 	zend_declare_property_null(fileDictLoader_ce, "path", strlen("path"), ZEND_ACC_PROTECTED);
-	zend_declare_property_string(fileDictLoader_ce, "segmentName", strlen("segmentName"),"words_\%s", ZEND_ACC_PROTECTED);
+	zend_declare_property_string(fileDictLoader_ce, "segmentName", strlen("segmentName"),"words_", ZEND_ACC_PROTECTED);
 		
     return SUCCESS;
 }
