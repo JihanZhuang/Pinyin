@@ -64,6 +64,81 @@ PHP_METHOD(FileDictLoader,map){
 }
 
 PHP_METHOD(FileDictLoader,mapSurname){
+	zval *string;
+	zval *path;
+	zval *tmp=getThis();
+	zval rv,dictionary,file;
+	zval args[4];
+	zval fname,strposF,mbsubstrF,mbstrlenF,encode;
+	char *surnames;
+	zend_string *surname;
+	zval *pinyin;
+	zval ret1,ret2,ret3;
+	char *str;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z",&string)==FAILURE){
+		return;
+	}
+	path=zend_read_property(fileDictLoader_ce,tmp,"path",sizeof("path")-1,0,&rv);
+
+	spprintf(&surnames,0,"%s/surnames",path->value.str->val);
+	printf("%s",surnames);
+
+	ZVAL_STRING(&fname,"parse_ini_file");
+	ZVAL_STRING(&strposF,"strpos");
+	ZVAL_STRING(&mbsubstrF,"mb_substr");
+	ZVAL_STRING(&mbstrlenF,"mb_strlen");
+	ZVAL_STRING(&encode,"UTF-8");
+
+	if(!access(surnames,0)){
+		ZVAL_STRING(&file,surnames);
+		ZVAL_COPY_VALUE(&args[0],&file);
+		if(call_user_function(EG(function_table),NULL,&fname,&dictionary,1,args)==SUCCESS){
+			zval_ptr_dtor(&args[0]);
+			ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARRVAL_P(dictionary), surname, pinyin) {
+				ZVAL_COPY_VALUE(&args[0],string);
+				ZVAL_STR(&args[1],surname);
+				if(call_user_function(EG(function_table),NULL,&strposFname,&ret1,2,args)==SUCCESS){
+					if(Z_LVAL(ret1)==0){
+						zval_ptr_dtor(ret1);
+						ZVAL_STR(&args[0],surname);
+						ZVAL_COPY(&args[1],&encode);
+						if(call_user_function(EG(function_table),NULL,&mbstrlenF,&ret1,2,args)==FAILURE){
+							return ;
+						}
+						ZVAL_STR(&args[0],string);
+						if(call_user_function(EG(function_table),NULL,&mbstrlenF,&ret2,2,args)==FAILURE){
+							return ;
+						}
+						ZVAL_COPY_VALUE(&args[1],&ret1);
+						ZVAL_COPY_VALUE(&args[2],&ret2);
+						ZVAL_COPY_VALUE(&args[3],&encode);
+						if(call_user_function(EG(function_table),NULL,&mbsubstrF,&ret3,4,args)==FAILURE){
+			                return ;
+						}
+						spprintf(&str,0,"%s%s",Z_STRVAL(pinyin),Z_STRVAL(ret3));
+						break;
+					}
+				}
+
+
+			} ZEND_HASH_FOREACH_END();
+		}
+	}
+
+	ZVAL_STRING(return_value,str);
+	if(str){
+		efree(str);
+	}
+	zval_ptr_dtor(&rv);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&strposF);
+	zval_ptr_dtor(&mbsubstrF);
+	zval_ptr_dtor(&mbstrlenF);
+	zval_ptr_dtor(&encode);
+	zval_ptr_dtor(&ret1);
+	zval_ptr_dtor(&ret2);
+	zval_ptr_dtor(&ret3);
 
 }
 
