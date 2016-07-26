@@ -21,7 +21,7 @@ PHP_METHOD(FileDictLoader,map){
 	zval rv;
 	char *segment;
 	int i;
-	zval file,retval,args[2],fname,strFname;
+	zval file,ret1,ret2,args[2],fname,strFname;
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z",&string)==FAILURE){
 		return;
 	}
@@ -33,15 +33,18 @@ PHP_METHOD(FileDictLoader,map){
 	ZVAL_STRING(&strFname,"strtr");
 	for(i=0;i<100;i++){
 		spprintf(&segment,0,"%s/%s%d",path->value.str->val,segmentName->value.str->val,i);
-		printf("%s\n",segment);
+	//	printf("%s\n",segment);
 		if(!access(segment,0)){
 		ZVAL_STRING(&file,segment);
 		ZVAL_COPY_VALUE(&args[0], &file);
-		if(call_user_function(EG(function_table), NULL, &fname, &retval, 1, args) == SUCCESS){
+		if(call_user_function(EG(function_table), NULL, &fname, &ret1, 1, args) == SUCCESS){
+			zval_ptr_dtor(&args[0]);
 			ZVAL_COPY_VALUE(&args[0], string);
-			ZVAL_COPY_VALUE(&args[1], &retval);
-			if(call_user_function(EG(function_table),NULL,&strFname,&retval,2,args)==SUCCESS){
-				ZVAL_COPY_VALUE(string,&retval);
+			ZVAL_COPY_VALUE(&args[1], &ret1);
+			if(call_user_function(EG(function_table),NULL,&strFname,&ret2,2,args)==SUCCESS){
+				zval_ptr_dtor(&args[0]);
+				zval_ptr_dtor(&args[1]);
+				ZVAL_COPY_VALUE(string,&ret2);
 			}else{
 				php_error_docref(NULL, E_WARNING, "strtr error!");
 			}
@@ -53,14 +56,11 @@ PHP_METHOD(FileDictLoader,map){
 			efree(segment);
 		}
 	}
-	zval_ptr_dtor(&file);
+	printf("%s\n",string->value.str->val);
+	ZVAL_COPY_VALUE(return_value,string);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&strFname);
-	zval_ptr_dtor(&retval);
-	zval_ptr_dtor(&args[0]);
-	zval_ptr_dtor(&args[1]);
-	ZVAL_COPY(return_value,string);
-
+	zval_ptr_dtor(&rv);
 }
 
 PHP_METHOD(FileDictLoader,mapSurname){
