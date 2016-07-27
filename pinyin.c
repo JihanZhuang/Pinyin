@@ -100,15 +100,12 @@ PHP_METHOD(FileDictLoader,mapSurname){
 				ZVAL_STR(&args[1],surname);
 				if(call_user_function(EG(function_table),NULL,&strposF,&ret1,2,args)==SUCCESS){
 					if(Z_LVAL(ret1)==0){
-						zval_ptr_dtor(&args[0]);
-						zval_ptr_dtor(&args[1]);
 						zval_ptr_dtor(&ret1);
 						ZVAL_STR(&args[0],surname);
 						ZVAL_COPY(&args[1],&encode);
 						if(call_user_function(EG(function_table),NULL,&mbstrlenF,&ret1,2,args)==FAILURE){
 							return ;
 						}
-						zval_ptr_dtor(&args[0]);
 						ZVAL_COPY_VALUE(&args[0],string);
 						if(call_user_function(EG(function_table),NULL,&mbstrlenF,&ret2,2,args)==FAILURE){
 							return ;
