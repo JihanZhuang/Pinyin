@@ -82,7 +82,7 @@ PHP_METHOD(FileDictLoader,mapSurname){
 	path=zend_read_property(fileDictLoader_ce,tmp,"path",sizeof("path")-1,0,&rv);
 
 	spprintf(&surnames,0,"%s/surnames",path->value.str->val);
-	printf("%s",surnames);
+	//printf("%s",surnames);
 
 	ZVAL_STRING(&fname,"parse_ini_file");
 	ZVAL_STRING(&strposF,"strpos");
@@ -95,28 +95,32 @@ PHP_METHOD(FileDictLoader,mapSurname){
 		ZVAL_COPY_VALUE(&args[0],&file);
 		if(call_user_function(EG(function_table),NULL,&fname,&dictionary,1,args)==SUCCESS){
 			zval_ptr_dtor(&args[0]);
-			ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARRVAL_P(dictionary), surname, pinyin) {
+			ZEND_HASH_FOREACH_STR_KEY_VAL_IND(Z_ARRVAL(dictionary), surname, pinyin) {
 				ZVAL_COPY_VALUE(&args[0],string);
 				ZVAL_STR(&args[1],surname);
-				if(call_user_function(EG(function_table),NULL,&strposFname,&ret1,2,args)==SUCCESS){
+				if(call_user_function(EG(function_table),NULL,&strposF,&ret1,2,args)==SUCCESS){
 					if(Z_LVAL(ret1)==0){
-						zval_ptr_dtor(ret1);
+						zval_ptr_dtor(&args[0]);
+						zval_ptr_dtor(&args[1]);
+						zval_ptr_dtor(&ret1);
 						ZVAL_STR(&args[0],surname);
 						ZVAL_COPY(&args[1],&encode);
 						if(call_user_function(EG(function_table),NULL,&mbstrlenF,&ret1,2,args)==FAILURE){
 							return ;
 						}
-						ZVAL_STR(&args[0],string);
+						zval_ptr_dtor(&args[0]);
+						ZVAL_COPY_VALUE(&args[0],string);
 						if(call_user_function(EG(function_table),NULL,&mbstrlenF,&ret2,2,args)==FAILURE){
 							return ;
 						}
 						ZVAL_COPY_VALUE(&args[1],&ret1);
+						Z_LVAL(ret2)--;
 						ZVAL_COPY_VALUE(&args[2],&ret2);
 						ZVAL_COPY_VALUE(&args[3],&encode);
 						if(call_user_function(EG(function_table),NULL,&mbsubstrF,&ret3,4,args)==FAILURE){
 			                return ;
 						}
-						spprintf(&str,0,"%s%s",Z_STRVAL(pinyin),Z_STRVAL(ret3));
+						spprintf(&str,0,"%s%s",Z_STRVAL_P(pinyin),Z_STRVAL(ret3));
 						break;
 					}
 				}
@@ -130,6 +134,11 @@ PHP_METHOD(FileDictLoader,mapSurname){
 	if(str){
 		efree(str);
 	}
+	if(surnames){
+		efree(surnames);
+	}
+	zval_ptr_dtor(&file);
+	zval_ptr_dtor(&dictionary);
 	zval_ptr_dtor(&rv);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&strposF);
@@ -139,6 +148,10 @@ PHP_METHOD(FileDictLoader,mapSurname){
 	zval_ptr_dtor(&ret1);
 	zval_ptr_dtor(&ret2);
 	zval_ptr_dtor(&ret3);
+	zval_ptr_dtor(&args[0]);
+	zval_ptr_dtor(&args[1]);
+	zval_ptr_dtor(&args[2]);
+	zval_ptr_dtor(&args[3]);
 
 }
 
@@ -261,10 +274,10 @@ const zend_function_entry pinyin_method[]={
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
-	ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
+	ZEND_ARG_TYPE_INFO(0, string,IS_STRING,1)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_mapSurname, 0, 0, 1)
-	ZEND_ARG_TYPE_INFO(1, string,IS_STRING,1)
+	ZEND_ARG_TYPE_INFO(0, string,IS_STRING,1)
 ZEND_END_ARG_INFO()	
 
 const zend_function_entry dictLoaderInterface_method[]={
