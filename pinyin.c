@@ -145,7 +145,7 @@ PHP_METHOD(FileDictLoader,mapSurname){
 	zval_ptr_dtor(&ret1);
 	zval_ptr_dtor(&ret2);
 	zval_ptr_dtor(&ret3);
-	zval_ptr_dtor(&args[0]);
+	//zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 	zval_ptr_dtor(&args[2]);
 	zval_ptr_dtor(&args[3]);
