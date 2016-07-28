@@ -258,12 +258,57 @@ PHP_METHOD(Pinyin,prepare){
 
 
 }
+
+PHP_METHOD(Pinyin,format){
+	zval *pinyin,*tone=NULL;
+	char searchs[28][3]={
+		"üē","üé","üě","üè",
+		"ā","á","ǎ","à",
+		"ē","é","ě","è",
+		"ī","í","ǐ","ì",
+		"ō","ó","ǒ","ò",
+		"ū","ú","ǔ","ù",
+		"ǖ","ǘ","ǚ","ǜ"
+	};
+	char replace[7][3]={
+		"ue","a","e","i","o","u","v"
+	}
+	int i;
+	char *pos;
+
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&pinyin,&tone)==FAILURE){
+		return ;
+	}
+	if(tone==NULL){
+		ZVAL_BOOL(tone,IS_FALSE);
+	}
+		for(i=0;i<28;){
+			pos=strstr(ZSTR_VAL(Z_STR_P(name)),searchs[i]);
+			if(pos!=NULL){
+				if(i<=3){
+					ZSTR_VAL(Z_STR_P(name))[pos-ZSTR_VAL(Z_STR_P(name))]=replace[i/4][0];
+					ZSTR_VAL(Z_STR_P(name))[pos-ZSTR_VAL(Z_STR_P(name))+1]=replace[i/4][1];
+				}else{
+					ZSTR_VAL(Z_STR_P(name))[pos-ZSTR_VAL(Z_STR_P(name))]=replace[i/4][0];
+				}
+			}else{
+				i++;
+			}
+		}
+
+}
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		//ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 		ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_prepare, 0)
 		ZEND_ARG_INFO(0,str)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_format,0)
+		ZEND_ARG_INFO(0,pinyin)
+		ZEND_ARG_INFO(0,tone)
 ZEND_END_ARG_INFO()
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
