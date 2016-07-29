@@ -310,6 +310,21 @@ PHP_METHOD(Pinyin,format){
 
 }
 
+PHP_ME(Pinyin,splitWords){
+	zval *pinyin,*option;
+	zval ret;
+	zval fname;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"zz",&pinyin,&option)==FAILURE){
+		return FALSE;
+	}
+	ZVAL_STRING(&fname,"preg_split");
+	if(call_user_function(EG(function_table),NULL,)==SUCCESS){
+
+	}
+
+}
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		//ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 		ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
@@ -321,10 +336,15 @@ ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_format,0)
 		ZEND_ARG_INFO(0,pinyin)
 		ZEND_ARG_INFO(0,tone)
 ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_splitWords,0)
+		ZEND_ARG_INFO(0,pinyin)
+		ZEND_ARG_INFO(0,option)
+ZEND_END_ARG_INFO()
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		format,	arginfo_Pinyin_format,		ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		splitWords,arginfo_Pinyin_splitWords,		ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
