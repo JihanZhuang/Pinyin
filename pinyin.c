@@ -32,7 +32,7 @@ PHP_METHOD(FileDictLoader,map){
 	ZVAL_STRING(&fname,"parse_ini_file");
 	ZVAL_STRING(&strFname,"strtr");
 	for(i=0;i<100;i++){
-		spprintf(&segment,0,"%s/%s%d",path->value.str->val,segmentName->value.str->val,i);
+		spprintf(&segment,0,"%s/%s%d",ZSTR_VAL(Z_STR_P(path)),ZSTR_VAL(Z_STR_P(segmentName)),i);
 	//	printf("%s\n",segment);
 		if(!access(segment,0)){
 		ZVAL_STRING(&file,segment);
@@ -261,7 +261,7 @@ PHP_METHOD(Pinyin,prepare){
 
 PHP_METHOD(Pinyin,format){
 	zval *pinyin,*tone=NULL;
-	char searchs[28][3]={
+	char *searchs[28]={
 		"üē","üé","üě","üè",
 		"ā","á","ǎ","à",
 		"ē","é","ě","è",
@@ -270,32 +270,43 @@ PHP_METHOD(Pinyin,format){
 		"ū","ú","ǔ","ù",
 		"ǖ","ǘ","ǚ","ǜ"
 	};
-	char replace[7][3]={
+	char *replace[7]={
 		"ue","a","e","i","o","u","v"
-	}
+	};
 	int i;
 	char *pos;
+	char *new_pinyin;
 
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&pinyin,&tone)==FAILURE){
 		return ;
 	}
-	if(tone==NULL){
-		ZVAL_BOOL(tone,IS_FALSE);
-	}
 		for(i=0;i<28;){
-			pos=strstr(ZSTR_VAL(Z_STR_P(name)),searchs[i]);
+			pos=strstr(ZSTR_VAL(Z_STR_P(pinyin)),searchs[i]);
 			if(pos!=NULL){
 				if(i<=3){
-					ZSTR_VAL(Z_STR_P(name))[pos-ZSTR_VAL(Z_STR_P(name))]=replace[i/4][0];
-					ZSTR_VAL(Z_STR_P(name))[pos-ZSTR_VAL(Z_STR_P(name))+1]=replace[i/4][1];
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))]=replace[i/4][0];
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=replace[i/4][1];
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+2]=i%4+1+'0';
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+3]=' ';
 				}else{
-					ZSTR_VAL(Z_STR_P(name))[pos-ZSTR_VAL(Z_STR_P(name))]=replace[i/4][0];
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))]=replace[i/4][0];
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=i%4+1+'0';
 				}
 			}else{
 				i++;
 			}
 		}
+		/*if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
+			spprintf(&new_pinyin,0,"%s%d",ZSTR_VAL(Z_STR_P(pinyin)),i%5+1);
+			ZVAL_STRING(return_value,new_pinyin);
+			if(new_pinyin){
+				efree(new_pinyin);
+			}
+		}else{*/
+			ZVAL_COPY(return_value,pinyin);
+		
+
 
 }
 
@@ -313,6 +324,7 @@ ZEND_END_ARG_INFO()
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		format,	arginfo_Pinyin_format,		ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
