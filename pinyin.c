@@ -310,17 +310,66 @@ PHP_METHOD(Pinyin,format){
 
 }
 
-PHP_ME(Pinyin,splitWords){
+PHP_METHOD(Pinyin,splitWords){
 	zval *pinyin,*option;
 	zval ret;
 	zval fname;
+	zval args[2];
+	zval split;
+	zend_ulong	 num_key;
+	zval *subject_entry;
+	zval tone;
+	zval *pyObj=getThis();
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"zz",&pinyin,&option)==FAILURE){
-		return FALSE;
+		return ;
 	}
 	ZVAL_STRING(&fname,"preg_split");
-	if(call_user_function(EG(function_table),NULL,)==SUCCESS){
+	ZVAL_STRING(&args[0],"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z\\d]+/iu");
+	ZVAL_COPY_VALUE(&args[1],pinyin);
+	if(call_user_function(EG(function_table),NULL,&fname,&ret,2,args)==SUCCESS){
+			zval_ptr_dtor(&fname);
+			zval_ptr_dtor(&args[0]);
+			
+			ZVAL_STRING(&fname,"array_filter");
+			ZVAL_COPY_VALUE(&args[0],&ret);
+			if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==SUCCESS){
+				ZVAL_COPY_VALUE(&split,&ret);
+				zval_ptr_dtor(&args[0]);
+				zval_ptr_dtor(&fname);
+				if(strcasecmp(ZSTR_VAL(Z_STR_P(option)),"unicode")!=0){
+						ZVAL_FALSE(&tone);
+						if(strcasecmp(ZSTR_VAL(Z_STR_P(option)),"ascii")==0){
+							ZVAL_TRUE(&tone);
+						}
+						ZVAL_COPY_VALUE(&args[1],&tone);
+						ZVAL_STRING(&fname,"format");
+						ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL(split), num_key,  subject_entry) {
+								ZVAL_COPY_VALUE(&args[0],subject_entry);
+								if(call_user_function(EG(function_table),pyObj,&fname,&ret,2,args)==SUCCESS){
+									zval tmp;
+									ZVAL_COPY(&tmp,&ret);
+									zend_hash_index_update(Z_ARRVAL(split),num_key,&tmp);
+									zval_ptr_dtor(&ret);
+								}
+						}ZEND_HASH_FOREACH_END();
+						zval_ptr_dtor(&fname);
+						ZVAL_STRING(&fname,"array_values");
+						ZVAL_COPY_VALUE(&args[0],&split);
+						if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==SUCCESS){
+							ZVAL_COPY(return_value,&ret);
+						}
+						
+				}
+			}
+			zval_ptr_dtor(&fname);
+			zval_ptr_dtor(&ret);
 
+	}else{
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+		zval_ptr_dtor(&ret);
+		return ;
 	}
 
 }
