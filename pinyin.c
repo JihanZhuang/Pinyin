@@ -377,7 +377,7 @@ PHP_METHOD(Pinyin,splitWords){
 PHP_METHOD(Pinyin,sentence){
 	zval *punctuations;
 	zval *sentence,*withTone;
-	zval fname,args[3],rv;
+	zval fname,args[3],rv,ret;
 	zval *pyObj=getThis();
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&sentence,&withTone)==FAILURE){
@@ -387,7 +387,14 @@ PHP_METHOD(Pinyin,sentence){
 	//you can fine zend_class_entry is one of _zend_value's union,and it is equla to zend_object's ce
 	punctuations=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"punctuations",sizeof("punctuations")-1,0,&rv);
 	
-
+	ZEND_STRING(&fname,"array_keys");
+	ZEND_COPY_VALUE(&args[0],punctuations);
+	
+	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+		return;
+	}
 
 
 }
