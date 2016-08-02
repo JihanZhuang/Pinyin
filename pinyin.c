@@ -376,6 +376,19 @@ PHP_METHOD(Pinyin,splitWords){
 
 PHP_METHOD(Pinyin,sentence){
 	zval *punctuations;
+	zval *sentence,*withTone;
+	zval fname,args[3],rv;
+	zval *pyObj=getThis();
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&sentence,&withTone)==FAILURE){
+		return;
+	}
+	//Z_OBJCE_P(objPtr) is a define for you to get the Obj->ce quickly;
+	//you can fine zend_class_entry is one of _zend_value's union,and it is equla to zend_object's ce
+	punctuations=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"punctuations",sizeof("punctuations")-1,0,&rv);
+	
+
+
 
 }
 
@@ -403,6 +416,7 @@ const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		format,	arginfo_Pinyin_format,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		splitWords,arginfo_Pinyin_splitWords,		ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		sentence,arginfo_Pinyin_sentence,		ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
