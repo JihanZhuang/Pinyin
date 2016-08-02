@@ -434,19 +434,19 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 	punctuationsRegex=&ret;
-	spprintf(&regex,0,"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z0-9%s\s_]+/iu",ZSTR_VAL(Z_STR_P(punctuationsRegex)));
+	spprintf(&regex,0,"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z0-9%s\\s_]+/iu",ZSTR_VAL(Z_STR_P(punctuationsRegex)));
 	zval_ptr_dtor(&ret);
 	ZVAL_STRING(&fname,"romanize");
 	ZEND_COPY_VALUE(&args[0],sentence);
 	if(call_user_function(EG(function_table),pyObj,&fname,&ret,1,args)==FAILURE){
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&ret);
-		return
+		return;
 	}
 	zval_ptr_dtor(&fname);
 	ZEND_STRING(&fname,"preg_replace");
 	ZVAL_STRING(&args[0],regex);
-	ZVAL_STRING(&args[1],'');
+	ZVAL_STRING(&args[1],"");
 	if(regex){
 		efree(regex);
 	}
@@ -496,7 +496,7 @@ PHP_METHOD(Pinyin,sentence){
 	}else{
 		ZVAL_STRING(&fname,"format");
 		ZEND_COPY_VALUE(&args[1],&ret);
-		ZVAL_BOOL(&args[1],false);
+		ZVAL_BOOL(&args[1],0);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		ZEND_COPY_VALUE(return_value,&ret);
 
