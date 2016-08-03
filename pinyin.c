@@ -464,6 +464,7 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&args[1]);
 	zval_ptr_dtor(&args[2]);
 	ZVAL_DUP(&pinyin,&ret);//need free
+	zval_ptr_dtor(&ret);
 	//pinyin=&ret;//need free pinyin
 	ZEND_STRING(&fname,"array_merge");
 	init_array(&tmpArr);
@@ -503,6 +504,59 @@ PHP_METHOD(Pinyin,sentence){
 	}
 }
 
+PHP_METHOD(Pinyin,romanize){
+	zval *string,*isName;
+	zval fname,args[2],dictLoader;
+	zval *pyObj=getThis();
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&string,&isName)==FAILURE){
+		return;
+	}
+	
+	ZVAL_STRING(&fname,"prepare");
+	ZEND_COPY_VALUE(&args[0],string);
+	call_user_function(EG(function_table),pyObj,&fname,string,1,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);
+	ZVAL_STRING(&fname,"getLoader");
+	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,args);
+	if(Z_TYPE_P(isName)==IS_TRUE){
+		ZVAL_STRING(&fname,"convertSurname");
+		ZEND_COPY_VALUE(&args[0],string);
+		ZEND_COPY_VALUE(&args[1],&dictLoader);
+		call_user_function(EG(function_table),pyObj,&fname,string,2,args);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+	}
+	ZVAL_STRING(&fname,"map");
+	ZEND_COPY_VALUE(&args[0],string);
+	call_user_function(EG(function_table),&dictLoader,&fname,string,1,args);
+	zval_ptr_dtor(&fname);
+    zval_ptr_dtor(&args[0]);
+
+	ZEND_COPY_VALUE(return_value,string);
+
+
+
+	
+}
+
+PHP_METHOD(Pinyin,getLoader){
+	zval *loader;
+	zval *pyObj=getThis();
+	zval rv;
+	zval obj,obj_arg;
+
+	loader=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"loader",sizeof("loader")-1,0,&rv);
+	if(Z_TYPE_P(loader)!=IS_NULL){
+		ZEND_COPY_VALUE(return_value,loader);
+	}else{
+		object_init_ex(&obj,fileDictLoader_ce);
+		ZVAL_STRING(&obj_arg,"./../data/");
+		zend_call_method_with_1_params(&obj, NULL, NULL, "__construct", NULL, obj_arg);
+		ZEND_COPY_VALUE(return_value,&obj);
+	}
+}
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		//ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 		ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
@@ -522,12 +576,21 @@ ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_sentence,0)
 		ZEND_ARG_INFO(0,sentence)
 		ZEND_ARG_INFO(0,withTone)
 ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_romanize,0)
+	    ZEND_ARG_INFO(0,string)
+	    ZEND_ARG_INFO(0,isName)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_getLoader,0)
+ZEND_END_ARG_INFO()
+	
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		format,	arginfo_Pinyin_format,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		splitWords,arginfo_Pinyin_splitWords,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		sentence,arginfo_Pinyin_sentence,		ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		romanize,arginfo_Pinyin_romanize,		ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,      getLoader,arginfo_Pinyin_getLoader,       ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
