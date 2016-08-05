@@ -1,5 +1,6 @@
 //pinyin.c
 #include "php_pinyin.h"
+extern PHPAPI zend_class_entry *InvalidArgumentException;
 zend_class_entry *dictLoaderInterface_ce;
 zend_class_entry *fileDictLoader_ce;
 zend_class_entry *pinyin_ce;
@@ -557,6 +558,137 @@ PHP_METHOD(Pinyin,getLoader){
 	}
 }
 
+PHP_METHOD(Pinyin,convert){
+	zval *string,*option;
+	zval args[2],fname,ret;
+	zval *pyObj=getThis();
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&string,&option)==FAILURE){
+		return;
+	}
+	if(option==NULL){
+		ZVAL_STRING(&fname,"romanize");
+		ZEND_COPY_VALUE(&args[0],string);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
+		zval_ptr_dtor(&fname);
+		ZVAL_STRING(&fname,"splitWords");
+		ZEND_COPY_VALUE(&args[0],&ret);
+		ZVAL_STRING(&args[1],"none");
+		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+		zval_ptr_dtor(&args[1]);
+		ZEND_COPY_VALUE(return_value,&ret);
+	}else{
+		ZVAL_STRING(&fname,"romanize");
+		ZEND_COPY_VALUE(&args[0],string);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
+		zval_ptr_dtor(&fname);
+		ZVAL_STRING(&fname,"splitWords");
+		ZEND_COPY_VALUE(&args[0],&ret);
+		ZEND_COPY_VALUE(&args[1],option);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+		ZEND_COPY_VALUE(return_value,&ret);
+
+	}
+
+}
+
+PHP_METHOD(Pinyin,name){
+	zval *stringName,*option;
+	zval args[2],fname,ret;
+	zval *pyObj=getThis();
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&stringName,&option)==FAILURE){
+		return;
+	}
+	if(option==NULL){
+		ZVAL_STRING(&fname,"romanize");
+		ZEND_COPY_VALUE(&args[0],stringName);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
+		zval_ptr_dtor(&fname);
+		ZVAL_STRING(&fname,"splitWords");
+		ZEND_COPY_VALUE(&args[0],&ret);
+		ZVAL_BOOL(&args[1],1);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+		zval_ptr_dtor(&args[1]);
+		ZEND_COPY_VALUE(return_value,&ret);
+	}else{
+		ZVAL_STRING(&fname,"romanize");
+		ZEND_COPY_VALUE(&args[0],stringName);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
+		zval_ptr_dtor(&fname);
+		ZVAL_STRING(&fname,"splitWords");
+		ZEND_COPY_VALUE(&args[0],&ret);
+		ZEND_COPY_VALUE(&args[1],option);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+		ZEND_COPY_VALUE(return_value,&ret);
+
+	}
+
+}
+
+PHP_METHOD(Pinyin,permalink){
+	zval *string;
+	char *delimiter="-";
+	size_t len   = 1;
+	zval *pyObj=getThis();
+	zval tArr,fname,args[3],ret;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|s",&string,&delimiter,&len)==FAILURE){
+		return;
+	}
+	
+	init_array(&tArr);
+	add_index_string(&tArr,0,"_");
+	add_index_string(&tArr,1,"-");
+	add_index_string(&tArr,2,".");
+	add_index_string(&tArr,3,"");
+	
+	ZVAL_STRING(&fname,"in_array");
+	ZVAL_STRING(&args[0],delimiter);
+	ZEDN_COPY_VALUE(&args[1],&tArr);
+	ZVAL_BOOL(&args[2],1);
+
+	call_user_functioin(EG(function_table),NULL,&fname,&ret,3,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);
+	zval_ptr_dtor(&args[1]);
+	zval_ptr_dtor(&args[2]);
+	zval_ptr_dtor(&tArr);
+	if(Z_TYPE(ret)==IS_FALSE){
+		zend_throw_exception_ex(InvalidArgumentException, 0, "Delimiter must be one of: '_', '-', '', '.'.");
+	}else{
+		ZVAL_STRING(&fname,"convert");
+		ZEND_COPY_VALUE(&args[0],string);
+		ZVAL_BOOL(&args[1],1);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[1]);
+		ZVAL_STRING(&fname,"implode");
+		ZEND_COPY_VALUE(&args[1],&ret);
+		ZVAL_STRING(&args[0],delimiter);
+		call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
+		ZEND_COPY_VALUE(return_value,&ret);
+		zval_ptr_dtor(&fname);
+		zval_ptr_dtor(&args[0]);
+	}
+}
+
+PHP_METHOD(Pinyin,abbr){
+	zval *string;
+	char *delimiter="-";
+	size_t len   = 1;
+	
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|s",&string,&delimiter,&len)==FAILURE){
+		return;
+	}
+}
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		//ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 		ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
@@ -582,7 +714,28 @@ ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_romanize,0)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_getLoader,0)
 ZEND_END_ARG_INFO()
-	
+
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_convert,0)
+	    ZEND_ARG_INFO(0,string)
+	    ZEND_ARG_INFO(0,option)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_name,0)
+	    ZEND_ARG_INFO(0,stringName)
+	    ZEND_ARG_INFO(0,option)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_permalink,0)
+	    ZEND_ARG_INFO(0,string)
+	    ZEND_ARG_INFO(0,delimiter)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_abbr,0)
+	    ZEND_ARG_INFO(0,string)
+	    ZEND_ARG_INFO(0,delimiter)
+ZEND_END_ARG_INFO()
+
+
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
@@ -591,6 +744,10 @@ const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		sentence,arginfo_Pinyin_sentence,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		romanize,arginfo_Pinyin_romanize,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,      getLoader,arginfo_Pinyin_getLoader,       ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		convert,arginfo_Pinyin_convert,			ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		name,arginfo_Pinyin_name,			ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		permalink,arginfo_Pinyin_permalink,			ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		abbr,arginfo_Pinyin_abbr,			ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
