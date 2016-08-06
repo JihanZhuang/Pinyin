@@ -678,15 +678,59 @@ PHP_METHOD(Pinyin,permalink){
 		zval_ptr_dtor(&args[0]);
 	}
 }
+/*public function abbr($string, $delimiter = '')
+{
+             // return implode($delimiter, array_map(function ($pinyin) {
+                    //     return $pinyin[0];
+// }, $this->convert($string, false)));
 
+ $convStr=$this->convert($string, false);
+ $tArr=array();
+ $i=0;
+ foreach ($convStr as $v) {
+ $tArr[$i] = $v[0];
+ $i++;
+ }
+
+return implode($delimiter, $tArr);
+ }
+ */
 PHP_METHOD(Pinyin,abbr){
-	zval *string;
+	zval *string,*value;
 	char *delimiter="-";
 	size_t len   = 1;
-	
+	zval convStr,tArr,fname,args[2],ret;
+	zval *pyObj=getThis();
+	zend_ulong i=0;
+
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|s",&string,&delimiter,&len)==FAILURE){
 		return;
 	}
+	ZVAL_STRING(&fname,"convert");
+	ZEND_COPY_VALUE(&args[0],string);
+	ZVAL_BOOL(&args[1],0);
+	call_user_function(EG(function_table),pyObj,&fname,&convStr,2,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[1]);
+
+	init_array(&tArr);
+	ZEND_HASH_FOREACH_VAL_IND(Z_ARRVAL(convStr),value){
+		add_index_string(&tArr,i,&ZSTR_VAL(Z_STR_P(value))[0]);
+		i++;
+	}ZEND_HASH_FOREACH_END();
+	
+	ZVAL_STRING(&fname,"implode");
+	ZVAL_STRING(&args[0],delimiter);
+	ZEND_COPY_VALUE(&args[1],tArr);
+	call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);
+	zval_ptr_dtor(&args[1]);
+
+	ZEND_COPY_VALUE(return_value,&ret);
+
+
+	
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
