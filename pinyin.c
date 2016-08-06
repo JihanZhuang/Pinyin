@@ -753,6 +753,22 @@ PHP_METHOD(Pinyin,abbr){
 	
 }
 
+PHP_METHOD(Pinyin,convertSurname){
+	zval *string,*dictLoader;
+	zval fname,args[1];
+	zval ret;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS(),"zz",&string,&dictLoader)==FAILURE){
+		return ;
+	}
+
+	ZVAL_STRING(&fname,"mapSurname");
+	ZEND_COPY_VALUE(&args[0],string);
+	call_user_function(EG(function_table),dictLoader,&fname,&ret,1,args);
+
+	ZEND_COPY_VALUE(return_value,&ret);
+}
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
 		ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
 		//ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
@@ -803,6 +819,10 @@ ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_abbr,0)
 	    ZEND_ARG_INFO(0,delimiter)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_convertSurname,0)
+	    ZEND_ARG_INFO(0,string)
+	    ZEND_ARG_INFO(0,dictLoader)
+ZEND_END_ARG_INFO()
 
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
@@ -817,6 +837,7 @@ const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		name,arginfo_Pinyin_name,			ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		permalink,arginfo_Pinyin_permalink,			ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		abbr,arginfo_Pinyin_abbr,			ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		convertSurname,arginfo_Pinyin_convertSurname,			ZEND_ACC_PUBLIC)
     {NULL,NULL,NULL}
 };
 ZEND_BEGIN_ARG_INFO_EX(arginfo_DictLoaderInterface_map, 0, 0, 1)
