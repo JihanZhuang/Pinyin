@@ -176,9 +176,6 @@ PHP_METHOD(Pinyin,__construct){
    
 
 	//init loader
-	zval retval;
-	zval fname;
-	ZVAL_STRING(&fname,"get_class");
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|z", &loader) == FAILURE) {
 			return;
 	}
@@ -195,7 +192,30 @@ PHP_METHOD(Pinyin,__construct){
 	//printf("%s\n",(&loader));
 	//printf("123");
 	 zval_ptr_dtor(&punctuations);
-	 zval_ptr_dtor(&fname);
+}
+
+PHP_METHOD(Pinyin,setLoader){
+	zval *loader=NULL;
+	zval *tmp;
+	tmp=getThis();
+
+	//init loader
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "z", &loader) == FAILURE) {
+			return;
+	}
+	if(loader!=NULL){
+	//call_user_function(CG(function_table),NULL,&fname,&retval,1,loader);
+	//printf("%s\n",retval.value.str.val[1]);
+	//if(!strcmp(retval.value.str.val,"DictLoaderInterface")){
+	//	zend_throw_exception_ex(pinyin_ce,0,"Pinyin __construct's param must be the class of DictLoaderInterface");
+	//}
+	zend_update_property(pinyin_ce, tmp, "loader", sizeof("loader")-1, loader);
+
+	}
+	ZEND_COPY_VALUE(return_value,tmp);
+		//printf("%s\n",retval.value.str);
+	//printf("%s\n",(&loader));
+	//printf("123");
 }
 PHP_METHOD(Pinyin,prepare){
 	char *str=NULL;
@@ -734,8 +754,12 @@ PHP_METHOD(Pinyin,abbr){
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
-		//ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
-		ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
+		ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
+		//ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin__setLoader, 0, 0, 1)
+	    ZEND_ARG_OBJ_INFO(0, loader,"DictLoaderInterface",1)
+       //ZEND_ARG_TYPE_INFO(0,loader,IS_STRING,1)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_Pinyin_prepare, 0)
 		ZEND_ARG_INFO(0,str)
@@ -782,6 +806,7 @@ ZEND_END_ARG_INFO()
 
 const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		__construct,    arginfo_Pinyin___construct,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
+	PHP_ME(Pinyin,		setLoader,    arginfo_Pinyin__setLoader,   ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		format,	arginfo_Pinyin_format,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		splitWords,arginfo_Pinyin_splitWords,		ZEND_ACC_PUBLIC)
