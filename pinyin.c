@@ -1,6 +1,5 @@
 //pinyin.c
 #include "php_pinyin.h"
-extern PHPAPI zend_class_entry *InvalidArgumentException;
 zend_class_entry *dictLoaderInterface_ce;
 zend_class_entry *fileDictLoader_ce;
 zend_class_entry *pinyin_ce;
@@ -163,7 +162,6 @@ PHP_METHOD(Pinyin,__construct){
 	//MAKE_STD_ZVAL(punctuations);
 	//init punctuations array
 	array_init(&punctuations);
-	zend_update_property(pinyin_ce,tmp, "punctuations",sizeof("punctuations"), &punctuations);
 	add_assoc_string(&punctuations,"，",",");
 	add_assoc_string(&punctuations,"。",".");
 	add_assoc_string(&punctuations,"！","!");
@@ -173,6 +171,7 @@ PHP_METHOD(Pinyin,__construct){
 	add_assoc_string(&punctuations,"”","\"");
 	add_assoc_string(&punctuations,"‘","'");
 	add_assoc_string(&punctuations,"’","'");
+	zend_update_property(pinyin_ce,tmp, "punctuations",strlen("punctuations"), &punctuations);
    
 
 	//init loader
@@ -191,7 +190,6 @@ PHP_METHOD(Pinyin,__construct){
 		//printf("%s\n",retval.value.str);
 	//printf("%s\n",(&loader));
 	//printf("123");
-	 zval_ptr_dtor(&punctuations);
 }
 
 PHP_METHOD(Pinyin,setLoader){
@@ -212,7 +210,7 @@ PHP_METHOD(Pinyin,setLoader){
 	zend_update_property(pinyin_ce, tmp, "loader", sizeof("loader")-1, loader);
 
 	}
-	ZEND_COPY_VALUE(return_value,tmp);
+	ZVAL_COPY_VALUE(return_value,tmp);
 		//printf("%s\n",retval.value.str);
 	//printf("%s\n",(&loader));
 	//printf("123");
@@ -411,8 +409,8 @@ PHP_METHOD(Pinyin,sentence){
 	//you can fine zend_class_entry is one of _zend_value's union,and it is equla to zend_object's ce
 	punctuations=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"punctuations",sizeof("punctuations")-1,0,&rv);
 	
-	ZEND_STRING(&fname,"array_keys");
-	ZEND_COPY_VALUE(&args[0],punctuations);
+	ZVAL_STRING(&fname,"array_keys");
+	ZVAL_COPY_VALUE(&args[0],punctuations);
 	
 	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
 		zval_ptr_dtor(&fname);
@@ -420,9 +418,9 @@ PHP_METHOD(Pinyin,sentence){
 		return;
 	}
 	zval_ptr_dtor(&fname);
-	ZEND_STRING(&fname,"array_merge");
-	ZEND_COPY_VALUE(&args[0],&ret);
-	ZEND_COPY_VALUE(&args[1],punctuations);
+	ZVAL_STRING(&fname,"array_merge");
+	ZVAL_COPY_VALUE(&args[0],&ret);
+	ZVAL_COPY_VALUE(&args[1],punctuations);
 	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
@@ -431,8 +429,8 @@ PHP_METHOD(Pinyin,sentence){
 	}
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
-	ZEND_STRING(&fname,"implode");
-	ZEND_COPY_VALUE(&args[0],&ret);
+	ZVAL_STRING(&fname,"implode");
+	ZVAL_COPY_VALUE(&args[0],&ret);
 	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
@@ -441,9 +439,9 @@ PHP_METHOD(Pinyin,sentence){
 	}
 	zval_ptr_dtor(&fname);
     zval_ptr_dtor(&args[0]);
-	ZEND_STRING(&fname,"preg_quote");
-	ZEND_COPY_VALUE(&args[0],&ret);
-	ZEND_STRING(&args[1],"/");
+	ZVAL_STRING(&fname,"preg_quote");
+	ZVAL_COPY_VALUE(&args[0],&ret);
+	ZVAL_STRING(&args[1],"/");
 	if(call_user_function(EG(function_table),NULL,&fname,&ret,2,args)==FAILURE){
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
@@ -458,14 +456,14 @@ PHP_METHOD(Pinyin,sentence){
 	spprintf(&regex,0,"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z0-9%s\\s_]+/iu",ZSTR_VAL(Z_STR_P(punctuationsRegex)));
 	zval_ptr_dtor(&ret);
 	ZVAL_STRING(&fname,"romanize");
-	ZEND_COPY_VALUE(&args[0],sentence);
+	ZVAL_COPY_VALUE(&args[0],sentence);
 	if(call_user_function(EG(function_table),pyObj,&fname,&ret,1,args)==FAILURE){
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&ret);
 		return;
 	}
 	zval_ptr_dtor(&fname);
-	ZEND_STRING(&fname,"preg_replace");
+	ZVAL_STRING(&fname,"preg_replace");
 	ZVAL_STRING(&args[0],regex);
 	ZVAL_STRING(&args[1],"");
 	if(regex){
@@ -487,25 +485,25 @@ PHP_METHOD(Pinyin,sentence){
 	ZVAL_DUP(&pinyin,&ret);//need free
 	zval_ptr_dtor(&ret);
 	//pinyin=&ret;//need free pinyin
-	ZEND_STRING(&fname,"array_merge");
+	ZVAL_STRING(&fname,"array_merge");
 	init_array(&tmpArr);
 	add_assoc_string(&tmpArr,"\t"," ");
 	add_assoc_string(&tmpArr,"  "," ");
-	ZEND_COPY_VALUE(&args[0],punctuations);
-	ZEND_COPY_VALUE(&args[1],&tmpArr);
+	ZVAL_COPY_VALUE(&args[0],punctuations);
+	ZVAL_COPY_VALUE(&args[1],&tmpArr);
 	call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[1]);
 	ZVAL_DUP(&tpunctuations,&ret);//need free
 	zval_ptr_dtor(&ret);
 	ZVAL_STRING(&fname,"array_keys");
-	ZEND_COPY_VALUE(&args[0],tpunctuations);
+	ZVAL_COPY_VALUE(&args[0],&tpunctuations);
 	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
-	ZEND_STRING(&fname,"str_replace");
-	ZEND_COPY_VALUE(&args[0],&ret);
-	ZEND_COPY_VALUE(&args[1],&tpunctuations);
-	ZEND_COPY_VALUE(&args[2],&pinyin);
+	ZVAL_STRING(&fname,"str_replace");
+	ZVAL_COPY_VALUE(&args[0],&ret);
+	ZVAL_COPY_VALUE(&args[1],&tpunctuations);
+	ZVAL_COPY_VALUE(&args[2],&pinyin);
 	call_user_function(EG(function_table),NULL,&fname,&ret,3,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
@@ -514,13 +512,13 @@ PHP_METHOD(Pinyin,sentence){
 	
 	//ret equals pinyin
 	if(Z_TYPE_P(withTone)==IS_TRUE){
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 	}else{
 		ZVAL_STRING(&fname,"format");
-		ZEND_COPY_VALUE(&args[1],&ret);
+		ZVAL_COPY_VALUE(&args[1],&ret);
 		ZVAL_BOOL(&args[1],0);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 
 	}
 }
@@ -534,7 +532,7 @@ PHP_METHOD(Pinyin,romanize){
 	}
 	
 	ZVAL_STRING(&fname,"prepare");
-	ZEND_COPY_VALUE(&args[0],string);
+	ZVAL_COPY_VALUE(&args[0],string);
 	call_user_function(EG(function_table),pyObj,&fname,string,1,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
@@ -542,19 +540,19 @@ PHP_METHOD(Pinyin,romanize){
 	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,args);
 	if(Z_TYPE_P(isName)==IS_TRUE){
 		ZVAL_STRING(&fname,"convertSurname");
-		ZEND_COPY_VALUE(&args[0],string);
-		ZEND_COPY_VALUE(&args[1],&dictLoader);
+		ZVAL_COPY_VALUE(&args[0],string);
+		ZVAL_COPY_VALUE(&args[1],&dictLoader);
 		call_user_function(EG(function_table),pyObj,&fname,string,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
 	}
 	ZVAL_STRING(&fname,"map");
-	ZEND_COPY_VALUE(&args[0],string);
+	ZVAL_COPY_VALUE(&args[0],string);
 	call_user_function(EG(function_table),&dictLoader,&fname,string,1,args);
 	zval_ptr_dtor(&fname);
     zval_ptr_dtor(&args[0]);
 
-	ZEND_COPY_VALUE(return_value,string);
+	ZVAL_COPY_VALUE(return_value,string);
 
 
 
@@ -569,12 +567,12 @@ PHP_METHOD(Pinyin,getLoader){
 
 	loader=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"loader",sizeof("loader")-1,0,&rv);
 	if(Z_TYPE_P(loader)!=IS_NULL){
-		ZEND_COPY_VALUE(return_value,loader);
+		ZVAL_COPY_VALUE(return_value,loader);
 	}else{
 		object_init_ex(&obj,fileDictLoader_ce);
 		ZVAL_STRING(&obj_arg,"./../data/");
-		zend_call_method_with_1_params(&obj, NULL, NULL, "__construct", NULL, obj_arg);
-		ZEND_COPY_VALUE(return_value,&obj);
+		zend_call_method_with_1_params(&obj, Z_OBJCE(obj), NULL, "__construct", NULL, &obj_arg);
+		ZVAL_COPY_VALUE(return_value,&obj);
 	}
 }
 
@@ -587,29 +585,29 @@ PHP_METHOD(Pinyin,convert){
 	}
 	if(option==NULL){
 		ZVAL_STRING(&fname,"romanize");
-		ZEND_COPY_VALUE(&args[0],string);
+		ZVAL_COPY_VALUE(&args[0],string);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 		zval_ptr_dtor(&fname);
 		ZVAL_STRING(&fname,"splitWords");
-		ZEND_COPY_VALUE(&args[0],&ret);
+		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_STRING(&args[1],"none");
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
 		zval_ptr_dtor(&args[1]);
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 	}else{
 		ZVAL_STRING(&fname,"romanize");
-		ZEND_COPY_VALUE(&args[0],string);
+		ZVAL_COPY_VALUE(&args[0],string);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 		zval_ptr_dtor(&fname);
 		ZVAL_STRING(&fname,"splitWords");
-		ZEND_COPY_VALUE(&args[0],&ret);
-		ZEND_COPY_VALUE(&args[1],option);
+		ZVAL_COPY_VALUE(&args[0],&ret);
+		ZVAL_COPY_VALUE(&args[1],option);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 
 	}
 
@@ -624,29 +622,29 @@ PHP_METHOD(Pinyin,name){
 	}
 	if(option==NULL){
 		ZVAL_STRING(&fname,"romanize");
-		ZEND_COPY_VALUE(&args[0],stringName);
+		ZVAL_COPY_VALUE(&args[0],stringName);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 		zval_ptr_dtor(&fname);
 		ZVAL_STRING(&fname,"splitWords");
-		ZEND_COPY_VALUE(&args[0],&ret);
+		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_BOOL(&args[1],1);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
 		zval_ptr_dtor(&args[1]);
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 	}else{
 		ZVAL_STRING(&fname,"romanize");
-		ZEND_COPY_VALUE(&args[0],stringName);
+		ZVAL_COPY_VALUE(&args[0],stringName);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 		zval_ptr_dtor(&fname);
 		ZVAL_STRING(&fname,"splitWords");
-		ZEND_COPY_VALUE(&args[0],&ret);
-		ZEND_COPY_VALUE(&args[1],option);
+		ZVAL_COPY_VALUE(&args[0],&ret);
+		ZVAL_COPY_VALUE(&args[1],option);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 
 	}
 
@@ -681,19 +679,22 @@ PHP_METHOD(Pinyin,permalink){
 	zval_ptr_dtor(&args[2]);
 	zval_ptr_dtor(&tArr);
 	if(Z_TYPE(ret)==IS_FALSE){
-		zend_throw_exception_ex(InvalidArgumentException, 0, "Delimiter must be one of: '_', '-', '', '.'.");
+		zend_class_entry *InvalidArgumentException_class;
+		zend_string *lowercase_name = zend_string_alloc(strlen("InvalidArgumentException"), 1);
+		InvalidArgumentException_class=zend_hash_find_ptr(CG(class_table), lowercase_name);
+		zend_throw_exception_ex(InvalidArgumentException_class, 0, "Delimiter must be one of: '_', '-', '', '.'.");
 	}else{
 		ZVAL_STRING(&fname,"convert");
-		ZEND_COPY_VALUE(&args[0],string);
+		ZVAL_COPY_VALUE(&args[0],string);
 		ZVAL_BOOL(&args[1],1);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[1]);
 		ZVAL_STRING(&fname,"implode");
-		ZEND_COPY_VALUE(&args[1],&ret);
+		ZVAL_COPY_VALUE(&args[1],&ret);
 		ZVAL_STRING(&args[0],delimiter);
 		call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
-		ZEND_COPY_VALUE(return_value,&ret);
+		ZVAL_COPY_VALUE(return_value,&ret);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
 	}
@@ -727,7 +728,7 @@ PHP_METHOD(Pinyin,abbr){
 		return;
 	}
 	ZVAL_STRING(&fname,"convert");
-	ZEND_COPY_VALUE(&args[0],string);
+	ZVAL_COPY_VALUE(&args[0],string);
 	ZVAL_BOOL(&args[1],0);
 	call_user_function(EG(function_table),pyObj,&fname,&convStr,2,args);
 	zval_ptr_dtor(&fname);
@@ -741,13 +742,13 @@ PHP_METHOD(Pinyin,abbr){
 	
 	ZVAL_STRING(&fname,"implode");
 	ZVAL_STRING(&args[0],delimiter);
-	ZEND_COPY_VALUE(&args[1],tArr);
+	ZVAL_COPY_VALUE(&args[1],&tArr);
 	call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 
-	ZEND_COPY_VALUE(return_value,&ret);
+	ZVAL_COPY_VALUE(return_value,&ret);
 
 
 	
@@ -763,10 +764,10 @@ PHP_METHOD(Pinyin,convertSurname){
 	}
 
 	ZVAL_STRING(&fname,"mapSurname");
-	ZEND_COPY_VALUE(&args[0],string);
+	ZVAL_COPY_VALUE(&args[0],string);
 	call_user_function(EG(function_table),dictLoader,&fname,&ret,1,args);
 
-	ZEND_COPY_VALUE(return_value,&ret);
+	ZVAL_COPY_VALUE(return_value,&ret);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_Pinyin___construct, 0, 0, 1)
@@ -889,7 +890,7 @@ PHP_MINIT_FUNCTION(pinyin)
 	//define protected var
 	//定义属性
 	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PROTECTED);
-	zend_declare_property_null(pinyin_ce, "punctuations", strlen("punctuations"), ZEND_ACC_PROTECTED);
+	zend_declare_property_null(pinyin_ce, "punctuations", strlen("punctuations"), ZEND_ACC_PUBLIC);
 	//zval *punctuations;
 	//array_init(punctuations);
 	//zend_printf("%d", Z_TYPE_P(&punctuations));

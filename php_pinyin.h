@@ -10,6 +10,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "zend_exceptions.h"
+#include "zend_interfaces.h"
 extern zend_module_entry pinyin_module_entry;
 #define phpext_pinyin_ptr &pinyin_module_entry
 
