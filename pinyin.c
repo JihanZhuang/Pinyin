@@ -434,6 +434,7 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 	spprintf(&regex,0,"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z0-9%s\\s_]+/iu",ZSTR_VAL(Z_STR(punctuationsRegex)));
+	zval_ptr_dtor(&punctuationsRegex);
 	ZVAL_STRING(&fname,"romanize");
 	ZVAL_COPY_VALUE(&args[0],sentence);
 	call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
