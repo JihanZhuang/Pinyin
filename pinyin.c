@@ -396,7 +396,7 @@ PHP_METHOD(Pinyin,splitWords){
 PHP_METHOD(Pinyin,sentence){
 	zval *punctuations;
 	zval *sentence,*withTone;
-	zval fname,args[3],rv,ret,*punctuationsRegex;
+	zval fname,args[3],rv,ret,punctuationsRegex;
 	zval *pyObj=getThis();
 	char *regex;
 	zval pinyin,tpunctuations;
@@ -407,61 +407,36 @@ PHP_METHOD(Pinyin,sentence){
 	}
 	//Z_OBJCE_P(objPtr) is a define for you to get the Obj->ce quickly;
 	//you can fine zend_class_entry is one of _zend_value's union,and it is equla to zend_object's ce
-	punctuations=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"punctuations",sizeof("punctuations")-1,0,&rv);
+	punctuations=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"punctuations",strlen("punctuations"),0,&rv);
 	
 	ZVAL_STRING(&fname,"array_keys");
 	ZVAL_COPY_VALUE(&args[0],punctuations);
 	
-	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&ret);
-		return;
-	}
+	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
+	
 	zval_ptr_dtor(&fname);
 	ZVAL_STRING(&fname,"array_merge");
 	ZVAL_COPY_VALUE(&args[0],&ret);
 	ZVAL_COPY_VALUE(&args[1],punctuations);
-	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&ret);
-		return;
-	}
+	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	ZVAL_STRING(&fname,"implode");
 	ZVAL_COPY_VALUE(&args[0],&ret);
-	if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==FAILURE){
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&ret);
-		return;
-	}
+	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
     zval_ptr_dtor(&args[0]);
 	ZVAL_STRING(&fname,"preg_quote");
 	ZVAL_COPY_VALUE(&args[0],&ret);
 	ZVAL_STRING(&args[1],"/");
-	if(call_user_function(EG(function_table),NULL,&fname,&ret,2,args)==FAILURE){
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&args[1]);
-		zval_ptr_dtor(&ret);
-		return;
-	}
+	call_user_function(EG(function_table),NULL,&fname,&punctuationsRegex,2,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
-	punctuationsRegex=&ret;
-	spprintf(&regex,0,"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z0-9%s\\s_]+/iu",ZSTR_VAL(Z_STR_P(punctuationsRegex)));
-	zval_ptr_dtor(&ret);
+	spprintf(&regex,0,"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z0-9%s\\s_]+/iu",ZSTR_VAL(Z_STR(punctuationsRegex)));
 	ZVAL_STRING(&fname,"romanize");
 	ZVAL_COPY_VALUE(&args[0],sentence);
-	if(call_user_function(EG(function_table),pyObj,&fname,&ret,1,args)==FAILURE){
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&ret);
-		return;
-	}
+	call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
 	ZVAL_STRING(&fname,"preg_replace");
 	ZVAL_STRING(&args[0],regex);
@@ -470,20 +445,11 @@ PHP_METHOD(Pinyin,sentence){
 		efree(regex);
 	}
 	ZVAL_COPY_VALUE(&args[2],&ret);
-	if(call_user_function(EG(function_table),NULL,&fname,&ret,3,args)==FAILURE){
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&args[1]);
-		zval_ptr_dtor(&args[2]);
-		zval_ptr_dtor(&ret);
-		return;
-	}
+	call_user_function(EG(function_table),NULL,&fname,&pinyin,3,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 	zval_ptr_dtor(&args[2]);
-	ZVAL_DUP(&pinyin,&ret);//need free
-	zval_ptr_dtor(&ret);
 	//pinyin=&ret;//need free pinyin
 	ZVAL_STRING(&fname,"array_merge");
 	init_array(&tmpArr);
@@ -491,11 +457,9 @@ PHP_METHOD(Pinyin,sentence){
 	add_assoc_string(&tmpArr,"  "," ");
 	ZVAL_COPY_VALUE(&args[0],punctuations);
 	ZVAL_COPY_VALUE(&args[1],&tmpArr);
-	call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
-		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&args[1]);
-	ZVAL_DUP(&tpunctuations,&ret);//need free
-	zval_ptr_dtor(&ret);
+	call_user_function(EG(function_table),NULL,&fname,&tpunctuations,2,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[1]);
 	ZVAL_STRING(&fname,"array_keys");
 	ZVAL_COPY_VALUE(&args[0],&tpunctuations);
 	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
@@ -509,15 +473,22 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
 	zval_ptr_dtor(&args[2]);
+	ZVAL_STRING(&fname,"trim");
+	ZVAL_COPY_VALUE(&args[0],&ret);
+	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);
 	
 	//ret equals pinyin
 	if(Z_TYPE_P(withTone)==IS_TRUE){
 		ZVAL_COPY_VALUE(return_value,&ret);
 	}else{
 		ZVAL_STRING(&fname,"format");
-		ZVAL_COPY_VALUE(&args[1],&ret);
+		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_BOOL(&args[1],0);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&args[0]);
+		zval_ptr_dtor(&args[1]);
 		ZVAL_COPY_VALUE(return_value,&ret);
 
 	}

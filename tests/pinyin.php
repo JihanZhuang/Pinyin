@@ -15,3 +15,4 @@ print_r(array_values($split));
  */
 
 $a->sentence("123");
+//$a->permalink("","");
