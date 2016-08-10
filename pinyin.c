@@ -453,7 +453,7 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&args[2]);
 	//pinyin=&ret;//need free pinyin
 	ZVAL_STRING(&fname,"array_merge");
-	init_array(&tmpArr);
+	array_init(&tmpArr);
 	add_assoc_string(&tmpArr,"\t"," ");
 	add_assoc_string(&tmpArr,"  "," ");
 	ZVAL_COPY_VALUE(&args[0],punctuations);
@@ -633,7 +633,7 @@ PHP_METHOD(Pinyin,permalink){
 		return;
 	}
 	
-	init_array(&tArr);
+	array_init(&tArr);
 	add_index_string(&tArr,0,"_");
 	add_index_string(&tArr,1,"-");
 	add_index_string(&tArr,2,".");
@@ -641,10 +641,10 @@ PHP_METHOD(Pinyin,permalink){
 	
 	ZVAL_STRING(&fname,"in_array");
 	ZVAL_STRING(&args[0],delimiter);
-	ZEDN_COPY_VALUE(&args[1],&tArr);
+	ZVAL_COPY_VALUE(&args[1],&tArr);
 	ZVAL_BOOL(&args[2],1);
 
-	call_user_functioin(EG(function_table),NULL,&fname,&ret,3,args);
+	call_user_function(EG(function_table),NULL,&fname,&ret,3,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	zval_ptr_dtor(&args[1]);
@@ -706,7 +706,7 @@ PHP_METHOD(Pinyin,abbr){
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[1]);
 
-	init_array(&tArr);
+	array_init(&tArr);
 	ZEND_HASH_FOREACH_VAL_IND(Z_ARRVAL(convStr),value){
 		add_index_string(&tArr,i,&ZSTR_VAL(Z_STR_P(value))[0]);
 		i++;
