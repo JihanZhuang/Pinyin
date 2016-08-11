@@ -442,9 +442,6 @@ PHP_METHOD(Pinyin,sentence){
 	ZVAL_STRING(&fname,"preg_replace");
 	ZVAL_STRING(&args[0],regex);
 	ZVAL_STRING(&args[1],"");
-	if(regex){
-		efree(regex);
-	}
 	ZVAL_COPY_VALUE(&args[2],&ret);
 	call_user_function(EG(function_table),NULL,&fname,&pinyin,3,args);
 	zval_ptr_dtor(&fname);
@@ -497,7 +494,7 @@ PHP_METHOD(Pinyin,sentence){
 
 PHP_METHOD(Pinyin,romanize){
 	zval *string,*isName;
-	zval fname,args[2],dictLoader;
+	zval fname,args[2],dictLoader,ret;
 	zval *pyObj=getThis();
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&string,&isName)==FAILURE){
 		return;
@@ -505,26 +502,25 @@ PHP_METHOD(Pinyin,romanize){
 	
 	ZVAL_STRING(&fname,"prepare");
 	ZVAL_COPY_VALUE(&args[0],string);
-	call_user_function(EG(function_table),pyObj,&fname,string,1,args);
+	call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
-	zval_ptr_dtor(&args[0]);
 	ZVAL_STRING(&fname,"getLoader");
 	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,args);
 	if(Z_TYPE_P(isName)==IS_TRUE){
 		ZVAL_STRING(&fname,"convertSurname");
-		ZVAL_COPY_VALUE(&args[0],string);
+		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_COPY_VALUE(&args[1],&dictLoader);
-		call_user_function(EG(function_table),pyObj,&fname,string,2,args);
+		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
 	}
 	ZVAL_STRING(&fname,"map");
-	ZVAL_COPY_VALUE(&args[0],string);
-	call_user_function(EG(function_table),&dictLoader,&fname,string,1,args);
+	ZVAL_COPY_VALUE(&args[0],&ret);
+	call_user_function(EG(function_table),&dictLoader,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
     zval_ptr_dtor(&args[0]);
 
-	ZVAL_COPY_VALUE(return_value,string);
+	ZVAL_COPY_VALUE(return_value,&ret);
 
 
 
@@ -803,8 +799,8 @@ const zend_function_entry pinyin_method[]={
 	PHP_ME(Pinyin,		prepare, arginfo_Pinyin_prepare,	ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		format,	arginfo_Pinyin_format,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		splitWords,arginfo_Pinyin_splitWords,		ZEND_ACC_PUBLIC)
-	PHP_ME(Pinyin,		sentence,arginfo_Pinyin_sentence,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		romanize,arginfo_Pinyin_romanize,		ZEND_ACC_PUBLIC)
+	PHP_ME(Pinyin,		sentence,arginfo_Pinyin_sentence,		ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,      getLoader,arginfo_Pinyin_getLoader,       ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		convert,arginfo_Pinyin_convert,			ZEND_ACC_PUBLIC)
 	PHP_ME(Pinyin,		name,arginfo_Pinyin_name,			ZEND_ACC_PUBLIC)
