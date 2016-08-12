@@ -21,7 +21,7 @@ PHP_METHOD(FileDictLoader,map){
 	zval rv;
 	char *segment;
 	int i;
-	zval file,ret1,ret2,args[2],fname,strFname;
+	zval file,ret,args[2],fname,strFname;
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z",&string)==FAILURE){
 		return;
 	}
@@ -37,14 +37,14 @@ PHP_METHOD(FileDictLoader,map){
 		if(!access(segment,0)){
 		ZVAL_STRING(&file,segment);
 		ZVAL_COPY_VALUE(&args[0], &file);
-		if(call_user_function(EG(function_table), NULL, &fname, &ret1, 1, args) == SUCCESS){
+		if(call_user_function(EG(function_table), NULL, &fname, &ret, 1, args) == SUCCESS){
 			zval_ptr_dtor(&args[0]);
 			ZVAL_COPY_VALUE(&args[0], string);
-			ZVAL_COPY_VALUE(&args[1], &ret1);
-			if(call_user_function(EG(function_table),NULL,&strFname,&ret2,2,args)==SUCCESS){
+			ZVAL_COPY_VALUE(&args[1], &ret);
+			if(call_user_function(EG(function_table),NULL,&strFname,&ret,2,args)==SUCCESS){
 				zval_ptr_dtor(&args[0]);
 				zval_ptr_dtor(&args[1]);
-				ZVAL_COPY_VALUE(string,&ret2);
+				ZVAL_COPY_VALUE(string,&ret);
 			}else{
 				php_error_docref(NULL, E_WARNING, "strtr error!");
 			}
@@ -56,11 +56,9 @@ PHP_METHOD(FileDictLoader,map){
 			efree(segment);
 		}
 	}
-	printf("%s\n",string->value.str->val);
 	ZVAL_COPY_VALUE(return_value,string);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&strFname);
-	zval_ptr_dtor(&rv);
 }
 
 PHP_METHOD(FileDictLoader,mapSurname){
@@ -136,7 +134,6 @@ PHP_METHOD(FileDictLoader,mapSurname){
 	}
 	zval_ptr_dtor(&file);
 	zval_ptr_dtor(&dictionary);
-	zval_ptr_dtor(&rv);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&strposF);
 	zval_ptr_dtor(&mbsubstrF);
@@ -173,7 +170,6 @@ PHP_METHOD(Pinyin,__construct){
 	add_assoc_string(&punctuations,"’","'");
 	zend_update_property(pinyin_ce,tmp, "punctuations",strlen("punctuations"), &punctuations);
    
-
 	//init loader
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|z", &loader) == FAILURE) {
 			return;
@@ -395,13 +391,13 @@ PHP_METHOD(Pinyin,splitWords){
 
 PHP_METHOD(Pinyin,sentence){
 	zval *punctuations;
-	zval *sentence,*withTone;
+	//可变参数一定要先赋值为NULL,不然如果直接去判断类型，刚好没传这个参数，这个参数就是一个脏地址，会导致程序时好时坏。segment fault
+	zval *sentence,*withTone=NULL;
 	zval fname,args[3],rv,ret,punctuationsRegex;
 	zval *pyObj=getThis();
 	char *regex;
 	zval pinyin,tpunctuations;
 	zval tmpArr;
-
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&sentence,&withTone)==FAILURE){
 		return;
 	}
@@ -413,7 +409,6 @@ PHP_METHOD(Pinyin,sentence){
 	ZVAL_COPY_VALUE(&args[0],punctuations);
 	
 	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
-	
 	zval_ptr_dtor(&fname);
 	ZVAL_STRING(&fname,"array_merge");
 	ZVAL_COPY_VALUE(&args[0],&ret);
@@ -478,13 +473,15 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&args[0]);
 	
 	//ret equals pinyin
-	if(Z_TYPE_P(withTone)==IS_TRUE){
+	//先判断是否有传参,如果没传而且没初始化为NULL，会偶尔出现segment fault，因为是脏地址
+	if(withTone!=NULL&&Z_TYPE_P(withTone)==IS_TRUE){
 		ZVAL_COPY_VALUE(return_value,&ret);
 	}else{
 		ZVAL_STRING(&fname,"format");
 		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_BOOL(&args[1],0);
 		call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+		zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&args[0]);
 		zval_ptr_dtor(&args[1]);
 		ZVAL_COPY_VALUE(return_value,&ret);
@@ -504,6 +501,7 @@ PHP_METHOD(Pinyin,romanize){
 	ZVAL_COPY_VALUE(&args[0],string);
 	call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);
 	ZVAL_STRING(&fname,"getLoader");
 	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,args);
 	if(Z_TYPE_P(isName)==IS_TRUE){
@@ -519,10 +517,7 @@ PHP_METHOD(Pinyin,romanize){
 	call_user_function(EG(function_table),&dictLoader,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
     zval_ptr_dtor(&args[0]);
-
 	ZVAL_COPY_VALUE(return_value,&ret);
-
-
 
 	
 }
@@ -873,8 +868,7 @@ PHP_MINIT_FUNCTION(pinyin)
 	zend_class_implements(fileDictLoader_ce, 1, dictLoaderInterface_ce);
 	zend_declare_property_null(fileDictLoader_ce, "path", strlen("path"), ZEND_ACC_PROTECTED);
 	zend_declare_property_string(fileDictLoader_ce, "segmentName", strlen("segmentName"),"words_", ZEND_ACC_PROTECTED);
-		
-    return SUCCESS;
+	return SUCCESS;
 }
 
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
