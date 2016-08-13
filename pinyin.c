@@ -413,7 +413,7 @@ PHP_METHOD(Pinyin,sentence){
 	ZVAL_STRING(&fname,"array_merge");
 	ZVAL_COPY_VALUE(&args[0],&ret);
 	ZVAL_COPY_VALUE(&args[1],punctuations);
-	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
+	call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	ZVAL_STRING(&fname,"implode");
@@ -473,11 +473,13 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	
+	ZVAL_COPY_VALUE(return_value,&ret);return;
 	//ret equals pinyin
 	//先判断是否有传参,如果没传而且没初始化为NULL，会偶尔出现segment fault，因为是脏地址
 	if(withTone!=NULL&&Z_TYPE_P(withTone)==IS_TRUE){
 		ZVAL_COPY_VALUE(return_value,&ret);
 	}else{
+		/**format has bug**/
 		ZVAL_STRING(&fname,"format");
 		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_BOOL(&args[1],0);

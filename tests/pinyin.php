@@ -14,6 +14,6 @@ $split = array_filter(preg_split('/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàè�
 print_r(array_values($split));
  */
 
-print_r($a->sentence("123"));
+print_r($a->sentence("	dà	i"));
 
 //$a->permalink("","");
