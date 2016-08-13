@@ -168,7 +168,7 @@ PHP_METHOD(Pinyin,__construct){
 	add_assoc_string(&punctuations,"”","\"");
 	add_assoc_string(&punctuations,"‘","'");
 	add_assoc_string(&punctuations,"’","'");
-	zend_update_property(pinyin_ce,tmp, "punctuations",strlen("punctuations"), &punctuations);
+	zend_update_property(pinyin_ce,tmp, "punctuations",sizeof("punctuations")-1, &punctuations);
    
 	//init loader
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|z", &loader) == FAILURE) {
@@ -186,6 +186,7 @@ PHP_METHOD(Pinyin,__construct){
 		//printf("%s\n",retval.value.str);
 	//printf("%s\n",(&loader));
 	//printf("123");
+	zval_ptr_dtor(&punctuations);
 }
 
 PHP_METHOD(Pinyin,setLoader){
@@ -261,13 +262,12 @@ PHP_METHOD(Pinyin,prepare){
 	if (error == FAILURE) {
 				php_error_docref(NULL, E_WARNING, "Could not call preg_replace in the class of pinyin");
 	}else{
-		ZVAL_COPY(return_value,&retval);
+		ZVAL_COPY_VALUE(return_value,&retval);
 	}
 	zval_ptr_dtor(&fname);
 		zval_ptr_dtor(&argv[0]);
 		zval_ptr_dtor(&argv[1]);
 		zval_ptr_dtor(&argv[2]);
-		zval_ptr_dtor(&retval);
 	free(tmp);
 	//return SUCCESS;
 
@@ -436,6 +436,7 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&fname);
 	ZVAL_STRING(&fname,"preg_replace");
 	ZVAL_STRING(&args[0],regex);
+	efree(regex);
 	ZVAL_STRING(&args[1],"");
 	ZVAL_COPY_VALUE(&args[2],&ret);
 	call_user_function(EG(function_table),NULL,&fname,&pinyin,3,args);
@@ -490,7 +491,7 @@ PHP_METHOD(Pinyin,sentence){
 }
 
 PHP_METHOD(Pinyin,romanize){
-	zval *string,*isName;
+	zval *string,*isName=NULL;
 	zval fname,args[2],dictLoader,ret;
 	zval *pyObj=getThis();
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&string,&isName)==FAILURE){
@@ -501,10 +502,10 @@ PHP_METHOD(Pinyin,romanize){
 	ZVAL_COPY_VALUE(&args[0],string);
 	call_user_function(EG(function_table),pyObj,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
-	zval_ptr_dtor(&args[0]);
 	ZVAL_STRING(&fname,"getLoader");
-	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,args);
-	if(Z_TYPE_P(isName)==IS_TRUE){
+	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,NULL);
+	zval_ptr_dtor(&fname);
+	if(isName!=NULL&&Z_TYPE_P(isName)==IS_TRUE){
 		ZVAL_STRING(&fname,"convertSurname");
 		ZVAL_COPY_VALUE(&args[0],&ret);
 		ZVAL_COPY_VALUE(&args[1],&dictLoader);
@@ -515,10 +516,10 @@ PHP_METHOD(Pinyin,romanize){
 	ZVAL_STRING(&fname,"map");
 	ZVAL_COPY_VALUE(&args[0],&ret);
 	call_user_function(EG(function_table),&dictLoader,&fname,&ret,1,args);
+	zval_ptr_dtor(&dictLoader);
 	zval_ptr_dtor(&fname);
     zval_ptr_dtor(&args[0]);
 	ZVAL_COPY_VALUE(return_value,&ret);
-
 	
 }
 
@@ -535,6 +536,7 @@ PHP_METHOD(Pinyin,getLoader){
 		object_init_ex(&obj,fileDictLoader_ce);
 		ZVAL_STRING(&obj_arg,"./../data/");
 		zend_call_method_with_1_params(&obj, Z_OBJCE(obj), NULL, "__construct", NULL, &obj_arg);
+		zval_ptr_dtor(&obj_arg);
 		ZVAL_COPY_VALUE(return_value,&obj);
 	}
 }
