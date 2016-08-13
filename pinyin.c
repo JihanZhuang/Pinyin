@@ -517,7 +517,7 @@ PHP_METHOD(Pinyin,romanize){
 	call_user_function(EG(function_table),&dictLoader,&fname,&ret,1,args);
 	zval_ptr_dtor(&dictLoader);
 	zval_ptr_dtor(&fname);
-    //zval_ptr_dtor(&args[0]);
+    zval_ptr_dtor(&args[0]);
 	ZVAL_COPY_VALUE(return_value,&ret);
 	
 }
