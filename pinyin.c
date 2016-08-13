@@ -296,17 +296,27 @@ PHP_METHOD(Pinyin,format){
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&pinyin,&tone)==FAILURE){
 		return ;
 	}
+	//printf("%d\n",Z_TYPE_P(tone));
 		for(i=0;i<28;){
 			pos=strstr(ZSTR_VAL(Z_STR_P(pinyin)),searchs[i]);
 			if(pos!=NULL){
 				if(i<=3){
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))]=replace[i/4][0];
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=replace[i/4][1];
+					if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+2]=i%4+1+'0';
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+3]=' ';
+					}else{
+						ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+2]=' ';
+						ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+3]=' ';
+					}
 				}else{
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))]=replace[i/4][0];
+					if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){	
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=i%4+1+'0';
+					}else{
+					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=' ';
+					}
 				}
 			}else{
 				i++;
@@ -320,9 +330,6 @@ PHP_METHOD(Pinyin,format){
 			}
 		}else{*/
 			ZVAL_COPY(return_value,pinyin);
-		
-
-
 }
 
 PHP_METHOD(Pinyin,splitWords){
@@ -473,7 +480,6 @@ PHP_METHOD(Pinyin,sentence){
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	
-	ZVAL_COPY_VALUE(return_value,&ret);return;
 	//ret equals pinyin
 	//先判断是否有传参,如果没传而且没初始化为NULL，会偶尔出现segment fault，因为是脏地址
 	if(withTone!=NULL&&Z_TYPE_P(withTone)==IS_TRUE){
