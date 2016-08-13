@@ -295,17 +295,20 @@ PHP_METHOD(Pinyin,format){
 	};
 	int i;
 	char *pos;
-	char *new_pinyin;
-
+	char *new_pinyin=NULL;
+	zval fname;
+	zval args[3];
+	zval ret;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&pinyin,&tone)==FAILURE){
 		return ;
 	}
+	ZVAL_STRING(&fname,"str_replace");
 	//printf("%d\n",Z_TYPE_P(tone));
-		for(i=0;i<28;){
+		for(i=0;i<28;i++){
 			pos=strstr(ZSTR_VAL(Z_STR_P(pinyin)),searchs[i]);
 			if(pos!=NULL){
-				if(i<=3){
+				/*if(i<=3){
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))]=replace[i/4][0];
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=replace[i/4][1];
 					if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
@@ -322,19 +325,35 @@ PHP_METHOD(Pinyin,format){
 					}else{
 					ZSTR_VAL(Z_STR_P(pinyin))[pos-ZSTR_VAL(Z_STR_P(pinyin))+1]=' ';
 					}
+				}*/
+				if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
+					ZVAL_STRING(&args[0],searchs[i]);
+                	ZVAL_STRING(&args[1],replace[i/4]);
+                	ZVAL_COPY_VALUE(&args[2],pinyin);
+                	call_user_function(EG(function_table),NULL,&fname,&ret,3,args);
+					spprintf(&new_pinyin,0,"%s%d",ZSTR_VAL(Z_STR(ret)),i%5+1);
+				}else{
+					ZVAL_STRING(&args[0],searchs[i]);
+    	            ZVAL_STRING(&args[1],replace[i/4]);
+        	        ZVAL_COPY_VALUE(&args[2],pinyin);
+            	    call_user_function(EG(function_table),NULL,&fname,&ret,3,args);
 				}
-			}else{
-				i++;
+				zval_ptr_dtor(&args[0]);
+				zval_ptr_dtor(&args[1]);
 			}
 		}
-		/*if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
-			spprintf(&new_pinyin,0,"%s%d",ZSTR_VAL(Z_STR_P(pinyin)),i%5+1);
-			ZVAL_STRING(return_value,new_pinyin);
+		zval_ptr_dtor(&fname);
+		if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
+			zval_ptr_dtor(&ret);
 			if(new_pinyin){
+				ZVAL_STRING(return_value,new_pinyin);
 				efree(new_pinyin);
+			}else{
+				ZVAL_COPY(return_value,pinyin);
 			}
-		}else{*/
-			ZVAL_COPY(return_value,pinyin);
+		}else{
+			ZVAL_COPY_VALUE(return_value,&ret);
+		}
 }
 
 PHP_METHOD(Pinyin,splitWords){
