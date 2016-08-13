@@ -185,7 +185,6 @@ PHP_METHOD(Pinyin,__construct){
 	}
 		//printf("%s\n",retval.value.str);
 	//printf("%s\n",(&loader));
-	//printf("123");
 	zval_ptr_dtor(&punctuations);
 }
 
@@ -245,7 +244,11 @@ PHP_METHOD(Pinyin,prepare){
 				flag=0;
 		}
 	}
-	tlen=strlen(tmp);
+	if(tmp){
+		tlen=strlen(tmp);
+	}else{
+		tlen=0;
+	}
 	tmp=(char *)realloc(tmp,tlen*sizeof(char)+(i-j)*sizeof(char)+1);
 	strncpy(tmp+tlen,str+j,i-j+1);
 	//printf("%s\n",tmp);
@@ -268,7 +271,9 @@ PHP_METHOD(Pinyin,prepare){
 		zval_ptr_dtor(&argv[0]);
 		zval_ptr_dtor(&argv[1]);
 		zval_ptr_dtor(&argv[2]);
+	if(tmp){
 	free(tmp);
+	}
 	//return SUCCESS;
 
 
@@ -349,51 +354,37 @@ PHP_METHOD(Pinyin,splitWords){
 	ZVAL_STRING(&fname,"preg_split");
 	ZVAL_STRING(&args[0],"/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜa-z\\d]+/iu");
 	ZVAL_COPY_VALUE(&args[1],pinyin);
-	if(call_user_function(EG(function_table),NULL,&fname,&ret,2,args)==SUCCESS){
-			zval_ptr_dtor(&fname);
-			zval_ptr_dtor(&args[0]);
-			
-			ZVAL_STRING(&fname,"array_filter");
-			ZVAL_COPY_VALUE(&args[0],&ret);
-			if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==SUCCESS){
-				ZVAL_COPY_VALUE(&split,&ret);
-				zval_ptr_dtor(&args[0]);
-				zval_ptr_dtor(&fname);
-				if(strcasecmp(ZSTR_VAL(Z_STR_P(option)),"unicode")!=0){
-						ZVAL_FALSE(&tone);
-						if(strcasecmp(ZSTR_VAL(Z_STR_P(option)),"ascii")==0){
-							ZVAL_TRUE(&tone);
-						}
-						ZVAL_COPY_VALUE(&args[1],&tone);
-						ZVAL_STRING(&fname,"format");
-						ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL(split), num_key,  subject_entry) {
-								ZVAL_COPY_VALUE(&args[0],subject_entry);
-								if(call_user_function(EG(function_table),pyObj,&fname,&ret,2,args)==SUCCESS){
-									zval tmp;
-									ZVAL_COPY(&tmp,&ret);
-									zend_hash_index_update(Z_ARRVAL(split),num_key,&tmp);
-									zval_ptr_dtor(&ret);
-								}
-						}ZEND_HASH_FOREACH_END();
-						zval_ptr_dtor(&fname);
-						ZVAL_STRING(&fname,"array_values");
-						ZVAL_COPY_VALUE(&args[0],&split);
-						if(call_user_function(EG(function_table),NULL,&fname,&ret,1,args)==SUCCESS){
-							ZVAL_COPY(return_value,&ret);
-						}
-						
-				}
-			}
-			zval_ptr_dtor(&fname);
-			zval_ptr_dtor(&ret);
-
-	}else{
+	call_user_function(EG(function_table),NULL,&fname,&ret,2,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);			
+	ZVAL_STRING(&fname,"array_filter");
+	ZVAL_COPY_VALUE(&args[0],&ret);
+	call_user_function(EG(function_table),NULL,&fname,&split,1,args);
+	zval_ptr_dtor(&args[0]);
+	zval_ptr_dtor(&fname);
+	if(strcasecmp(ZSTR_VAL(Z_STR_P(option)),"unicode")!=0){
+		ZVAL_FALSE(&tone);
+		if(strcasecmp(ZSTR_VAL(Z_STR_P(option)),"ascii")==0){
+				ZVAL_TRUE(&tone);
+		}
+		ZVAL_COPY_VALUE(&args[1],&tone);
+		ZVAL_STRING(&fname,"format");
+		ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL(split), num_key,  subject_entry) {
+				ZVAL_COPY_VALUE(&args[0],subject_entry);
+				call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
+				zend_hash_index_update(Z_ARRVAL(split),num_key,&ret);
+		}ZEND_HASH_FOREACH_END();		
 		zval_ptr_dtor(&fname);
-		zval_ptr_dtor(&args[0]);
-		zval_ptr_dtor(&ret);
-		return ;
 	}
-
+	zval_ptr_dtor(&tone);
+	ZVAL_STRING(&fname,"array_values");
+	ZVAL_COPY_VALUE(&args[0],&split);
+	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
+	zval_ptr_dtor(&fname);
+	zval_ptr_dtor(&args[0]);
+	ZVAL_COPY_VALUE(return_value,&ret);
+			
+	
 }
 
 PHP_METHOD(Pinyin,sentence){
@@ -526,23 +517,23 @@ PHP_METHOD(Pinyin,romanize){
 	call_user_function(EG(function_table),&dictLoader,&fname,&ret,1,args);
 	zval_ptr_dtor(&dictLoader);
 	zval_ptr_dtor(&fname);
-    zval_ptr_dtor(&args[0]);
+    //zval_ptr_dtor(&args[0]);
 	ZVAL_COPY_VALUE(return_value,&ret);
 	
 }
 
 PHP_METHOD(Pinyin,getLoader){
-	zval *loader;
+	zval *loader=NULL;
 	zval *pyObj=getThis();
 	zval rv;
 	zval obj,obj_arg;
 
 	loader=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"loader",sizeof("loader")-1,0,&rv);
-	if(Z_TYPE_P(loader)!=IS_NULL){
+	if(loader!=NULL&&Z_TYPE_P(loader)!=IS_NULL){
 		ZVAL_COPY_VALUE(return_value,loader);
 	}else{
 		object_init_ex(&obj,fileDictLoader_ce);
-		ZVAL_STRING(&obj_arg,"./../data/");
+		ZVAL_STRING(&obj_arg,"/home/jihanzhuang/code/Pinyin/data/");
 		zend_call_method_with_1_params(&obj, Z_OBJCE(obj), NULL, "__construct", NULL, &obj_arg);
 		zval_ptr_dtor(&obj_arg);
 		ZVAL_COPY_VALUE(return_value,&obj);
@@ -550,7 +541,8 @@ PHP_METHOD(Pinyin,getLoader){
 }
 
 PHP_METHOD(Pinyin,convert){
-	zval *string,*option;
+	zval *string;
+	zval *option=NULL;
 	zval args[2],fname,ret;
 	zval *pyObj=getThis();
 	if(zend_parse_parameters(ZEND_NUM_ARGS(),"z|z",&string,&option)==FAILURE){
