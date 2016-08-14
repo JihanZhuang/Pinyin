@@ -13,10 +13,16 @@ $split = array_filter(preg_split('/[^üāēīōūǖáéíóúǘǎěǐǒǔǚàè�
 		            }
 print_r(array_values($split));
  *////home/jihanzhuang/code/Pinyin/data/
+//var_dump($a->loader);
 //print_r($a->romanize("  dà  i"));
+//print_r($a->romanize("  dà  i"));
+//print_r($a->romanize("  dà  i"));
+//print_r($a->romanize("  dà  i"));
+//print_r($a->loader);
 	 //print_r($a->sentence("	dà	i"));
 //$a=new FileDictLoader("/home/jihanzhuang/code/Pinyin/data/");
-//print_r($a->convert('带着希望去旅行，比到达终点更美好'));
+print_r($a->splitWords('   dà  i',"none"));
+print_r($a->convert('带着希望去旅行，比到达终点更美好'));
 print_r($a->convert('带着希望去旅行，比到达终点更美好',"unicode"));
 print_r($a->convert('带着希望去旅行，比到达终点更美好',"ascii"));
-unset($a);
+	 //unset($a);

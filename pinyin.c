@@ -56,7 +56,7 @@ PHP_METHOD(FileDictLoader,map){
 			efree(segment);
 		}
 	}
-	ZVAL_COPY_VALUE(return_value,string);
+	ZVAL_COPY(return_value,string);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&strFname);
 }
@@ -293,7 +293,7 @@ PHP_METHOD(Pinyin,format){
 	char *replace[7]={
 		"ue","a","e","i","o","u","v"
 	};
-	int i;
+	int i,flag=0;
 	char *pos;
 	char *new_pinyin=NULL;
 	zval fname;
@@ -333,6 +333,7 @@ PHP_METHOD(Pinyin,format){
                 	call_user_function(EG(function_table),NULL,&fname,&ret,3,args);
 					spprintf(&new_pinyin,0,"%s%d",ZSTR_VAL(Z_STR(ret)),i%5+1);
 				}else{
+					flag=1;
 					ZVAL_STRING(&args[0],searchs[i]);
     	            ZVAL_STRING(&args[1],replace[i/4]);
         	        ZVAL_COPY_VALUE(&args[2],pinyin);
@@ -352,7 +353,11 @@ PHP_METHOD(Pinyin,format){
 				ZVAL_COPY(return_value,pinyin);
 			}
 		}else{
-			ZVAL_COPY_VALUE(return_value,&ret);
+			if(flag==1){
+				ZVAL_COPY_VALUE(return_value,&ret);
+			}else{
+				ZVAL_COPY(return_value,pinyin);
+			}
 		}
 }
 
@@ -362,7 +367,7 @@ PHP_METHOD(Pinyin,splitWords){
 	zval fname;
 	zval args[2];
 	zval split;
-	zend_ulong	 num_key;
+	zend_ulong	 num_key=0;
 	zval *subject_entry;
 	zval tone;
 	zval *pyObj=getThis();
@@ -389,20 +394,25 @@ PHP_METHOD(Pinyin,splitWords){
 		ZVAL_COPY_VALUE(&args[1],&tone);
 		ZVAL_STRING(&fname,"format");
 		ZEND_HASH_FOREACH_NUM_KEY_VAL(Z_ARRVAL(split), num_key,  subject_entry) {
+				if (Z_TYPE_P(subject_entry) != IS_STRING) {
+					zend_error(E_WARNING, "Expected array for subject_entry %pu", num_key);
+					continue;
+				}	
 				ZVAL_COPY_VALUE(&args[0],subject_entry);
 				call_user_function(EG(function_table),pyObj,&fname,&ret,2,args);
 				zend_hash_index_update(Z_ARRVAL(split),num_key,&ret);
 		}ZEND_HASH_FOREACH_END();		
 		zval_ptr_dtor(&fname);
 	}
+	ZVAL_COPY_VALUE(return_value,&split);return;
 	zval_ptr_dtor(&tone);
+	ZVAL_COPY_VALUE(return_value,&split);return;
 	ZVAL_STRING(&fname,"array_values");
 	ZVAL_COPY_VALUE(&args[0],&split);
 	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);
 	zval_ptr_dtor(&fname);
 	zval_ptr_dtor(&args[0]);
 	ZVAL_COPY_VALUE(return_value,&ret);
-			
 	
 }
 
@@ -523,6 +533,7 @@ PHP_METHOD(Pinyin,romanize){
 	ZVAL_STRING(&fname,"getLoader");
 	call_user_function(EG(function_table),pyObj,&fname,&dictLoader,0,NULL);
 	zval_ptr_dtor(&fname);
+//	ZVAL_COPY_VALUE(return_value,&dictLoader);
 	if(isName!=NULL&&Z_TYPE_P(isName)==IS_TRUE){
 		ZVAL_STRING(&fname,"convertSurname");
 		ZVAL_COPY_VALUE(&args[0],&ret);
@@ -549,11 +560,12 @@ PHP_METHOD(Pinyin,getLoader){
 
 	loader=zend_read_property(Z_OBJCE_P(pyObj),pyObj,"loader",sizeof("loader")-1,0,&rv);
 	if(loader!=NULL&&Z_TYPE_P(loader)!=IS_NULL){
-		ZVAL_COPY_VALUE(return_value,loader);
+		ZVAL_COPY(return_value,loader);
 	}else{
 		object_init_ex(&obj,fileDictLoader_ce);
 		ZVAL_STRING(&obj_arg,"/home/jihanzhuang/code/Pinyin/data/");
 		zend_call_method_with_1_params(&obj, Z_OBJCE(obj), NULL, "__construct", NULL, &obj_arg);
+		zend_update_property(Z_OBJCE_P(pyObj),pyObj, "loader",sizeof("loader")-1, &obj);
 		zval_ptr_dtor(&obj_arg);
 		ZVAL_COPY_VALUE(return_value,&obj);
 	}
@@ -873,7 +885,7 @@ PHP_MINIT_FUNCTION(pinyin)
 
 	//define protected var
 	//定义属性
-	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PROTECTED);
+	zend_declare_property_null(pinyin_ce, "loader", strlen("loader"), ZEND_ACC_PUBLIC);
 	zend_declare_property_null(pinyin_ce, "punctuations", strlen("punctuations"), ZEND_ACC_PUBLIC);
 	//zval *punctuations;
 	//array_init(punctuations);
