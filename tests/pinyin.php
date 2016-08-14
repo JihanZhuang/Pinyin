@@ -19,10 +19,14 @@ print_r(array_values($split));
 //print_r($a->romanize("  dà  i"));
 //print_r($a->romanize("  dà  i"));
 //print_r($a->loader);
-	 //print_r($a->sentence("	dà	i"));
+//print_r($a->sentence("	dà	i")."\n");
 //$a=new FileDictLoader("/home/jihanzhuang/code/Pinyin/data/");
-print_r($a->splitWords('   dà  i',"none"));
-print_r($a->convert('带着希望去旅行，比到达终点更美好'));
-print_r($a->convert('带着希望去旅行，比到达终点更美好',"unicode"));
-print_r($a->convert('带着希望去旅行，比到达终点更美好',"ascii"));
-	 //unset($a);
+	 //print_r($a->splitWords('   dà  i',"none"));
+	 for($i=0;$i<100;$i++){
+
+	 
+echo '带着希望去旅行，比到达终点更美好'."\n";
+print_r(implode($a->convert('带着希望去旅行，比到达终点更美好'),' ')."\n");
+print_r(implode($a->convert('带着希望去旅行，比到达终点更美好',"unicode"),' ')."\n");
+print_r(implode($a->convert('带着希望去旅行，比到达终点更美好',"ascii"),' ')."\n");
+	 }//unset($a);
