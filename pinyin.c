@@ -345,9 +345,9 @@ PHP_METHOD(Pinyin,format){
 		}
 		zval_ptr_dtor(&fname);
 		if(tone!=NULL&&Z_TYPE_P(tone)==IS_TRUE){
-			zval_ptr_dtor(&ret);
 			if(new_pinyin){
 				ZVAL_STRING(return_value,new_pinyin);
+				zval_ptr_dtor(&ret);
 				efree(new_pinyin);
 			}else{
 				ZVAL_COPY(return_value,pinyin);
@@ -404,9 +404,9 @@ PHP_METHOD(Pinyin,splitWords){
 		}ZEND_HASH_FOREACH_END();		
 		zval_ptr_dtor(&fname);
 	}
-	ZVAL_COPY_VALUE(return_value,&split);return;
+	//ZVAL_COPY_VALUE(return_value,&split);return;
 	zval_ptr_dtor(&tone);
-	ZVAL_COPY_VALUE(return_value,&split);return;
+	//ZVAL_COPY_VALUE(return_value,&split);return;
 	ZVAL_STRING(&fname,"array_values");
 	ZVAL_COPY_VALUE(&args[0],&split);
 	call_user_function(EG(function_table),NULL,&fname,&ret,1,args);

@@ -22,11 +22,11 @@ print_r(array_values($split));
 //print_r($a->sentence("	dà	i")."\n");
 //$a=new FileDictLoader("/home/jihanzhuang/code/Pinyin/data/");
 	 //print_r($a->splitWords('   dà  i',"none"));
-	 for($i=0;$i<2;$i++){
+	 for($i=0;$i<10000;$i++){
 
 	 
-echo '带着希望去旅行，比到达终点更美好'."\n";
-print_r(implode($a->convert('带着希望去旅行，比到达终点更美好'),' ')."\n");
-print_r(implode($a->convert('带着希望去旅行，比到达终点更美好',"unicode"),' ')."\n");
+//echo '带着希望去旅行，比到达终点更美好'."\n";
+//print_r(implode($a->convert('带着希望去旅行，比到达终点更美好'),' ')."\n");
+//print_r(implode($a->convert('带着希望去旅行，比到达终点更美好',"unicode"),' ')."\n");
 print_r(implode($a->convert('带着希望去旅行，比到达终点更美好',"ascii"),' ')."\n");
 	 }//unset($a);
